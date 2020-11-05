@@ -1,0 +1,9 @@
+{
+    "training" : {
+        "optimizer" : "adam",
+        "metrics" : ["accuracy"],
+        "loss" : "categorical_crossentropy",
+        "batch_size" : 5,
+        "epochs" : 10
+    }
+}
