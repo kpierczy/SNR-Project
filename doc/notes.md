@@ -3,8 +3,8 @@
 1. Create the data pipe:
     - Measure dataset's size
     - Choose data loading scheme depending on the size:
-        - as a whole (dataset fits into memory)
-        - batch by batch (dataset does not fit into memory)
+        - dataset (data fits into memory)
+        - generator (data does not fit into memory)
     - Choose the training batch'es size 
     - Perform data preprocessing
         - scaling

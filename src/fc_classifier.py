@@ -23,6 +23,7 @@ import tensorflow as tf
 from glob import glob
 import json
 import os
+from DataPipe import DataPipe
 
 # Directory containing configuration files (relative to PROJECT_HOME)
 CONFIG_DIR = 'config/learning'
