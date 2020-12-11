@@ -3,13 +3,13 @@
 1. Create the data pipe:
     - Measure dataset's size
     - Choose data loading scheme depending on the size:
-        -> as a whole (dataset fits into memory)
-        -> batch by batch (dataset does not fit into memory)
+        - as a whole (dataset fits into memory)
+        - batch by batch (dataset does not fit into memory)
     - Choose the training batch'es size 
     - Perform data preprocessing
-        -> scaling
-        -> augmentation
-        -> NN-specific preparation
+        - scaling
+        - augmentation
+        - NN-specific preparation
 
 2. Create the model
     - Load the base model
@@ -24,28 +24,28 @@
     - save the model each X epochs
     - log metrics every epoch
     - observe metrics:
-        -> strop the training when metrics plateau out
-        -> lower the learning rate
-        -> resume the training
+        - strop the training when metrics plateau out
+        - lower the learning rate
+        - resume the training
     - save training history at the end of the training
 
 4. Visualize the results
     - visualise the training and test datasets
-        -> histograms of classes
-        -> histograms of actual classification at subsequent epochs
-        -> dimensions reduction (T-SNE, UMAP, grand tour)
+        - histograms of classes
+        - histograms of actual classification at subsequent epochs
+        - dimensions reduction (T-SNE, UMAP, grand tour)
     - visualise NN's structure
-        -> structural graph
-        -> NN's example filters
-        -> inputs that maximise choosen neuron's activation
-        -> histograms of weights' and biases' of some layers at subsequent training steps
-        -> histograms of neuron's activation in some layers at subsequent training steps
-        -> histograms of weights' and biases' gradients in some layers at subsequent batches
+        - structural graph
+        - NN's example filters
+        - inputs that maximise choosen neuron's activation
+        - histograms of weights' and biases' of some layers at subsequent training steps
+        - histograms of neuron's activation in some layers at subsequent training steps
+        - histograms of weights' and biases' gradients in some layers at subsequent batches
     - visualise learning metrics over time
     - visualise classification accuracy 
-        -> two classes: well- and wrong-classified (UMAP, t-SNE)
-        -> original classes: actual vs predicted
-        -> dimensions reduction (T-SNE, UMAP, grand tour)
+        - two classes: well- and wrong-classified (UMAP, t-SNE)
+        - original classes: actual vs predicted
+        - dimensions reduction (T-SNE, UMAP, grand tour)
 
 
 # Handy tools
