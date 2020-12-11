@@ -1,5 +1,14 @@
+# ==================================================================================
+# According to the users' reports, there is a problem with Polaris GPUs since
+# ROCm-3.7. The workaround is to use earlier version of the ROCm at the time.
+# Basic container should be switched back to the 'rocm/tensorflow' when the bug 
+# will be fixed.
+# ==================================================================================
+
 # Pull the official ROCm image
-FROM rocm/tensorflow
+# FROM rocm/tensorflow
+# FROM rocm/tensorflow:rocm3.5-tf2.2-dev
+FROM rocm/tensorflow:rocm3.8-tf2.3-dev
 
 # Forward environment variables
 ARG PROJECT_HOME
@@ -35,3 +44,4 @@ RUN /bin/bash -c "python3 -m pip install -r ${HOME}/requirements_amd.py"
 # Cleanup copied files
 RUN /bin/bash -c "rm ${HOME}/installs.bash"
 RUN /bin/bash -c "rm ${HOME}/requirements.py"
+RUN /bin/bash -c "rm ${HOME}/requirements_amd.py"

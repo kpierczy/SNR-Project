@@ -1,9 +1,9 @@
 # Build the docker image with the preconfigured environment
-if ! sudo docker images | grep snr-rocm > /dev/null; then
+if ! sudo docker images | grep $DOCK_IMG > /dev/null; then
     echo -e "\nLOG: Building a docker image for ROCm environment.\n"
     alias builder='sudo docker build                                \
         -f scripts/rocm.Dockerfile                                  \
-        -t snr-rocm                                                 \
+        -t $DOCK_IMG                                                \
         --build-arg PROJECT_HOME=${PROJECT_HOME}                    \
         --build-arg TF_VERSION=${TF_VERSION}                        \
         --build-arg DATASET=${DATASET}                              \
@@ -30,4 +30,4 @@ sudo docker run                            \
     --security-opt seccomp=unconfined      \
     -v $HOME/dockerx:/dockerx              \
     -v $PROJECT_HOME:$PROJECT_HOME         \
-    snr-rocm
+    $DOCK_IMG

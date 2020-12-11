@@ -33,7 +33,7 @@ if ! python3 -m pip list | grep 'virtualenv ' > /dev/null; then
 fi
 
 # Install graphviz
-if ! which graphviz > /dev/null; then
+if ! apt list --installed 2> /dev/null | awk '/graphviz/ {print $1}' > /dev/null; then
     echo -e "\nLOG: Installing graphviz for Keras visualizations\n"
     sudo apt install -y graphviz
 fi

@@ -13,18 +13,28 @@
 PROJECT_HOME=~/Desktop/SNR-Project
 
 # Type of the tensorflow installation ['c': CPU, 'nvd': NVIDIA GPU, 'amd': AMD GPU]
-TF_VERSION=amd
+TF_VERSION=c
 
 # Dataset to be downloaded from Kaggle (in form <owner>/<dataset-name>)
 DATASET=moltean/fruits
 
+# Name of the docker image (if AMD GPU used)
+DOCK_IMG='snr-rocm'
 
 # -------------------------------------- Exports -----------------------------------------------
 
 export PROJECT_HOME=$PROJECT_HOME
 export TF_VERSION=$TF_VERSION
 export DATASET=$DATASET
-export KAGGLE_CONFIG_DIR=$PROJECT_HOME/config/kaggle
+export KAGGLE_CONFIG_DIR=$PROJECT_HOME/config/kaggle#
+export DOCK_IMG=$DOCK_IMG
+
+
+# ------------------------------------ Handy aliases -------------------------------------------
+
+if [[ $TF_VERSION == "amd" ]]; then
+    source $PROJECT_HOME/scripts/impl/aliases.bash
+fi
 
 
 # ------------------------------------Scripts calls --------------------------------------------

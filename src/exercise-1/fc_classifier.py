@@ -1,3 +1,10 @@
+# =================================================================================================================
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2020-12-09 18:16:36
+# @ Modified time: 2020-12-11 12:02:21
+# @ Description:
+# =================================================================================================================
+
 # Pretrained VGG-19
 from keras.applications.vgg19 import preprocess_input
 from keras.applications.vgg19 import VGG19
@@ -5,7 +12,7 @@ from keras.applications.vgg19 import VGG19
 from keras.layers import Dense
 from keras.layers import Flatten
 from keras.models import Model
-# Dataset manipulation
+# Input pieline
 from keras.preprocessing.image import ImageDataGenerator
 # Images manipulation
 from PIL import Image
@@ -20,7 +27,17 @@ import os
 # Directory containing configuration files (relative to PROJECT_HOME)
 CONFIG_DIR = 'config/learning'
 
+# Limit GPU's memory usage
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  try:
+    tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2560)])
+  except RuntimeError as e:
+    print(e)
+
 # ---------------------------------------- Prepare configuration ----------------------------------------
+
+# tf.debugging.set_log_device_placement(True)
 
 PROJECT_HOME = os.environ.get('PROJECT_HOME')
 CONFIG_DIR = os.path.join(PROJECT_HOME, CONFIG_DIR)
@@ -28,6 +45,10 @@ CONFIG_DIR = os.path.join(PROJECT_HOME, CONFIG_DIR)
 # Load directories info
 with open(os.path.join(CONFIG_DIR, 'dirs.json')) as dir_file:
     dirs = json.load(dir_file)
+
+# Load parameters
+with open(os.path.join(CONFIG_DIR, 'param.json')) as param_file:
+    param = json.load(param_file)
 
 # Get number of classes
 folders = glob(os.path.join(dirs['training'], '*'))
@@ -38,9 +59,11 @@ images = glob(os.path.join(dirs['training'], '*/*.jp*g'))
 im = Image.open(os.path.join(PROJECT_HOME, images[0]))
 input_shape = list(im.size) + [3]
 
-# Load parameters
-with open(os.path.join(CONFIG_DIR, 'param.json')) as param_file:
-    param = json.load(param_file)
+# Establish number of batches per epoch
+if param['training']['steps_per_epoch'] != 0:
+    steps_per_epoch = param['training']['steps_per_epoch']
+else:
+    steps_per_epoch = None
 
 # --------------------------------------------- Prepare data --------------------------------------------
 
@@ -50,7 +73,8 @@ training_gen = ImageDataGenerator(
     shear_range=0.2, 
     zoom_range=0.2,
     horizontal_flip=True,
-    preprocessing_function=preprocess_input
+    preprocessing_function=preprocess_input,
+    dtype=tf.dtypes.float32
 )
 
 training_gen = training_gen.flow_from_directory(
@@ -106,11 +130,13 @@ logdir = os.path.join(glob_logdir, datetime.now().strftime("%Y%m%d-%H%M%S"))
 tensorboard_callback = TensorBoard(log_dir=logdir, histogram_freq=0)
 
 # Start training
-model.fit(
+history = model.fit(
     x=training_gen,
-    steps_per_epoch=1000,
+    steps_per_epoch=steps_per_epoch,
     epochs=param['training']['epochs'],
     validation_data=validation_gen,
-    verbose=True,
-    callbacks=[tensorboard_callback]
+    verbose=1,
+    callbacks=[tensorboard_callback],
+    workers=4,
+    use_multiprocessing=True
 )
