@@ -72,11 +72,12 @@ class DataPipe:
 
 
     @staticmethod
-    def dataset_from_directory(directories, size=None, dtype='uint8', channels=3):
+    def dataset_from_directory(directories, size=None, dtype='uint8', ldtype='uint8', channels=3):
 
         """
         Preares a tf.data.Dataset from image data in the directories. Every directory should contain
         a set of subfolders named with data labels. Subfolders should hold images for the given label. 
+        Labels are encoded as one-hot vectors.
 
         Note
         ----
@@ -89,8 +90,10 @@ class DataPipe:
         size : tuple of int or None
             if None, files' sizes are preserved when loading
             if tuple, every loaded image is resized to the size[0] x size[1]
-        dtype : str or np.dtype
+        dtype : str or np.dtype or tf.dtypes
             type that the image data will be casted to when loaded
+        ldtype : str or np.dtype or tf.dtypes
+            type of the elements of the categorical vectors that labels will be casted to
         channels : 
             number of image's channel
 
@@ -108,8 +111,7 @@ class DataPipe:
         def file_to_training_example(path):
 
             """
-            Loads image with the given path. Inspect's the image's label (name of the folder
-            that image is hold in). Transforms the image to a tf.Tensor.
+            Loads image with the given path and tranforms it to a tf.Tensor.
 
             Params
             ------
@@ -122,35 +124,53 @@ class DataPipe:
                 (image, label) pair
 
             """ 
-            
-            # Split the path to the list components
-            path_split = tf.strings.split(path, os.path.sep)
-            # The second to last part of the path is the class label
-            label = path_split[-2]
 
             # Load the raw image from the file
             img = tf.io.read_file(path)
             # Decode the JPEG file
             img = tf.image.decode_jpeg(img, channels=channels)
             # Convert to the required data type
-            img = tf.image.convert_image_dtype(img, tf.dtypes.as_dtype(dtype))
+            img = tf.cast(img, tf.dtypes.as_dtype(dtype))
             # Resize the image
             if size is not None:
                 img = tf.image.resize(img, [size[0], size[1]])
 
-            return img, label
-
+            return img
 
         # Map of {'directory': tf.data.Dataset} pairs
         datasets = {}
 
         for d in directories:
-        
+
             # Get list of image files in the directory
-            ds = tf.data.Dataset.list_files(os.path.join(d, '*/*.jp*g'), shuffle=False)
+            files = glob(os.path.join(d, '*/*.jp*g'))
+            files.sort()
+
+            # Associate number values with the classes' subdirectories
+            labels_dirs = glob(os.path.join(d, '*'))
+            labels_dirs.sort()
+            labels_dict = {}
+            for i, l in enumerate(labels_dirs):
+                labels_dict[l] = i
+
+            # Create list of one-hot labels for the files
+            labels = []
+            for f in files:
+                # Get a file's directory
+                label_dir = os.path.dirname(f)
+                # Create the one-hot label
+                label = tf.one_hot(labels_dict[label_dir], depth=len(labels_dict), dtype=ldtype)
+                # Add the pair to the dataset
+                labels.append(label)
+                
+            # Transform list dataset to the tf.data.Dataset
+            ds = tf.data.Dataset.from_tensor_slices((files, labels))
 
             # Convert filenames of images to the dataset
-            ds = ds.map(file_to_training_example, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+            ds = ds.map(
+                lambda file, label: (file_to_training_example(file), label),
+                num_parallel_calls=tf.data.experimental.AUTOTUNE
+            )
 
             datasets[d] = ds
 

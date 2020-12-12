@@ -1,15 +1,15 @@
 # The project's workflow
 
 1. Create the data pipe:
-    - Measure dataset's size
-    - Choose data loading scheme depending on the size:
-        - dataset (data fits into memory)
+    - Measure dataset's size                             [+]
+    - Choose data loading scheme depending on the size:  [+]
+        - dataset (data fits into memory)                [+]
         - generator (data does not fit into memory)
-    - Choose the training batch'es size 
+    - Choose the training batch'es size                  [+]
     - Perform data preprocessing
-        - scaling
-        - augmentation
-        - NN-specific preparation
+        - scaling                                        [+]
+        - NN-specific preparation                        [+]
+        - augmentation        
 
 2. Create the model
     - Load the base model

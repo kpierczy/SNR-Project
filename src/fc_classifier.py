@@ -28,6 +28,8 @@ from DataPipe import DataPipe
 # Directory containing configuration files (relative to PROJECT_HOME)
 CONFIG_DIR = 'config/learning'
 
+# ---------------------------------------- Prepare configuration ----------------------------------------
+
 # Limit GPU's memory usage
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -35,8 +37,6 @@ if gpus:
     tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2560)])
   except RuntimeError as e:
     print(e)
-
-# ---------------------------------------- Prepare configuration ----------------------------------------
 
 # tf.debugging.set_log_device_placement(True)
 
@@ -68,34 +68,22 @@ else:
 
 # --------------------------------------------- Prepare data --------------------------------------------
 
-# Create training data generator
-training_gen = ImageDataGenerator(
-    rescale=1./255,
-    shear_range=0.2, 
-    zoom_range=0.2,
-    horizontal_flip=True,
-    preprocessing_function=preprocess_input,
-    dtype=tf.dtypes.float32
-)
+# Create training data set
+training_set = DataPipe.dataset_from_directory([dirs['training']], dtype='float32')[dirs['training']]
+training_set = training_set.map(lambda x,y: (preprocess_input(x), y))
+training_set = training_set.map(lambda x,y: (x / 255., y))
+training_set = training_set.shuffle(param["shuffle_buffer_size"])
+training_set = training_set.batch(param['batch_size'])
+training_set = training_set.prefetch(tf.data.experimental.AUTOTUNE)
 
-training_gen = training_gen.flow_from_directory(
-    directory=dirs['training'],
-    target_size=input_shape[0:2],
-    batch_size=param['training']['batch_size'],
-)
+# Create validation data set
+validation_set = DataPipe.dataset_from_directory([dirs['validation']], dtype='float32')[dirs['validation']]
+validation_set = validation_set.map(lambda x,y: (preprocess_input(x), y))
+validation_set = validation_set.map(lambda x,y: (x / 255., y))
+validation_set = validation_set.shuffle(param["shuffle_buffer_size"])
+validation_set = validation_set.batch(param['batch_size'])
+validation_set = validation_set.prefetch(tf.data.experimental.AUTOTUNE)
 
-# Create Validation data generator
-validation_gen = ImageDataGenerator(
-    rescale=1./255,
-    preprocessing_function=preprocess_input
-)
-
-validation_gen = validation_gen.flow_from_directory(
-    dirs['validation'],
-    target_size=input_shape[0:2],
-    batch_size=200,
-    class_mode='categorical'
-)
 
 # --------------------------------------------- Build model ---------------------------------------------
 
@@ -132,10 +120,10 @@ tensorboard_callback = TensorBoard(log_dir=logdir, histogram_freq=0)
 
 # Start training
 history = model.fit(
-    x=training_gen,
+    x=training_set,
     steps_per_epoch=steps_per_epoch,
     epochs=param['training']['epochs'],
-    validation_data=validation_gen,
+    validation_data=validation_set,
     verbose=1,
     callbacks=[tensorboard_callback],
     workers=4,

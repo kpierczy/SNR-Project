@@ -13,7 +13,7 @@
 PROJECT_HOME=~/Desktop/SNR-Project
 
 # Type of the tensorflow installation ['c': CPU, 'nvd': NVIDIA GPU, 'amd': AMD GPU]
-TF_VERSION=c
+TF_VERSION=amd
 
 # Dataset to be downloaded from Kaggle (in form <owner>/<dataset-name>)
 DATASET=moltean/fruits
