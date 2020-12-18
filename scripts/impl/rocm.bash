@@ -1,22 +1,22 @@
 # Build the docker image with the preconfigured environment
 if ! sudo docker images | grep $DOCK_IMG > /dev/null; then
-    echo -e "\nLOG: Building a docker image for ROCm environment.\n"
-    alias builder='sudo docker build                                \
+    printf "\nLOG: Building a docker image for ROCm environment.\n"
+    builder="sudo docker build                                      \
         -f scripts/rocm.Dockerfile                                  \
         -t $DOCK_IMG                                                \
         --build-arg PROJECT_HOME=${PROJECT_HOME}                    \
         --build-arg TF_VERSION=${TF_VERSION}                        \
         --build-arg DATASET=${DATASET}                              \
-        --build-arg KAGGLE_CONFIG_DIR={$PROJECT_HOME/config/kaggle}'
+        --build-arg KAGGLE_CONFIG_DIR={$PROJECT_HOME/config/kaggle}"
 
-    if ! builder .; then
-        echo -e "\nERR: Building a docker image failes.\n"
+    if ! $builder .; then
+        printf "\nERR: Building a docker image failes.\n"
         return
     fi
 fi
 
 # Run the container
-echo -e "\nLOG: Running virtual environment for ROCm tensorflow \n"
+printf "\nLOG: Running virtual environment for ROCm tensorflow \n"
 sudo docker run                            \
     -it                                    \
     --rm                                   \

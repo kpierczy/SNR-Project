@@ -4,6 +4,7 @@ scipy
 
 # Machine learning frameworks
 keras
+tensorflow-addons
 scikit-learn
 
 # Data manipulation

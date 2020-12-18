@@ -27,3 +27,17 @@ if [[ $DOCK_IMG != "" ]]; then
 else
     alias dexec="sudo docker exec -it $(dps | awk '/snr-rocm/ {print $1}') bash"
 fi
+
+# ----------------------------------------------- GPU fan controll -----------------------------------------------
+
+# Get GPU's fan speed in 0-255 range
+alias fsp="cat /sys/class/hwmon/hwmon3/pwm1"
+
+# set fans' speed to 'auto' mode
+alias fspauto="sudo bash -c 'echo 2 > /sys/class/hwmon/hwmon3/pwm1_enable'"
+
+# set fans' speed to 'manual' mode
+alias fspman="sudo bash -c 'echo 1 > /sys/class/hwmon/hwmon3/pwm1_enable'"
+
+# Set fan speed in 0-255 range (in 'manual' mode)
+fspset() { sudo bash -c "echo $1 > /sys/class/hwmon/hwmon3/pwm1"; }

@@ -1,24 +1,24 @@
 # The project's workflow
 
-1. Create the data pipe:
-    - Measure dataset's size                             [+]
-    - Choose data loading scheme depending on the size:  [+]
-        - dataset (data fits into memory)                [+]
-        - generator (data does not fit into memory)
-    - Choose the training batch'es size                  [+]
-    - Perform data preprocessing
-        - scaling                                        [+]
-        - NN-specific preparation                        [+]
-        - augmentation        
+1. Create the data pipe:                                 [<<+>>]
+    - Measure dataset's size                             [ <+> ]
+    - Choose data loading scheme depending on the size:  [ <+> ]
+        - dataset (data fits into memory)                [  +  ]
+        - generator (data does not fit into memory)      [  -  ]
+    - Choose the training batch'es size                  [ <+> ]
+    - Perform data preprocessing                         [ <+> ]
+        - scaling                                        [  +  ]
+        - NN-specific preparation                        [  +  ]
+        - augmentation                                   [  +  ]
 
-2. Create the model
-    - Load the base model
-    - remove excessive layers
-    - turn off choosen layers
-    - add required layers
-    - choose th loss function
-    - choose the optimiser
-    - choose the metrics to be observed
+2. Create the model                                      [<<+>>]
+    - Load the base model                                [ <+> ]
+    - remove excessive layers                            [ <+> ]
+    - turn off choosen layers                            [ <+> ]
+    - add required layers                                [ <+> ]
+    - choose th loss function                            [ <+> ]
+    - choose the optimiser                               [ <+> ]
+    - choose the metrics to be observed                  [ <+> ]
 
 3. Train the model
     - save the model each X epochs

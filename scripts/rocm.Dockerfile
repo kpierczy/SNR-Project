@@ -6,9 +6,9 @@
 # ==================================================================================
 
 # Pull the official ROCm image
-# FROM rocm/tensorflow
 # FROM rocm/tensorflow:rocm3.5-tf2.2-dev
 FROM rocm/tensorflow:rocm3.8-tf2.3-dev
+# FROM rocm/tensorflow
 
 # Forward environment variables
 ARG PROJECT_HOME

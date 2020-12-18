@@ -16,10 +16,96 @@ class DataPipe:
     """
 
     def __init__(self):
-        pass
+
+        """
+        Initializes a new DataPipe. The self.initialize() call is required before the
+        pipe can be used.
+        """
+
+        # Internal datasets
+        self.training_set = None
+        self.validation_set = None
+
+        # Values hold to be applied on self.apply_batch() call
+        self.batch_size = None
+        self.prefetch_buffer_size = None
+
+        # Object status
+        self.initialized = False
+        self.batched = False
+
+
+    def initialize(self,
+        training_dir, 
+        validation_dir,
+        dtype='uint8',
+        ldtype='uint8',
+        batch_size=64, 
+        shuffle_buffer_size=None,
+        prefetch_buffer_size=None
+    ):
+        """
+        Initializes new training and validation datasets hold by the object.
+
+        Params
+        ------
+        training_dir : string
+            directory of the training data (@see DataPipe.dataset_from_directory())
+        validation_dir : string
+            directory of the validation data (@see DataPipe.dataset_from_directory())
+        dtype : string or np.dtype
+            type of the images' representation
+        ldtype : string or np.dtype
+            type of the images labels' representation
+        batch_size : int 
+            size of the batch
+        shuffle_buffer_size : int or None
+            size of the buffer used to shuffle the dataset (@see tf.data.Dataset.shuffle())
+            if None, shuffling is not performed
+        prefetch_buffer_size : int or None
+            size of the buffer used to prefetch the data (@see tf.data.Dataset.prefetch())
+            if None, prefetching is not performed
+
+        """
+
+        # Create and shuffle a training set
+        self.training_set = self.dataset_from_directory([training_dir], dtype=dtype, ldtype=ldtype)[training_dir]
+        if shuffle_buffer_size is not None:
+            self.training_set = self.training_set.shuffle(shuffle_buffer_size)
+        # Create a validation set
+        self.validation_set = self.dataset_from_directory([validation_dir], dtype=dtype, ldtype=ldtype)[validation_dir]
+
+        # Holding batching informations for self.apply_batch() call
+        self.batch_size = batch_size
+        self.prefetch_buffer_size = prefetch_buffer_size
+
+        # Update object's state
+        self.initialized = True
+        self.batched = False
+        
+    
+    def apply_batch(self):
+
+        """
+        Applies batching and sets prefetching buffers for both training and validation
+        dataset in an initialized object.
+        """
+
+        if self.initialized and not self.batched:
+
+            # Establish batch size and set prefetch buffer for training set
+            self.training_set = self.training_set.batch(self.batch_size)
+            if self.prefetch_buffer_size is not None:
+                self.training_set = self.training_set.prefetch(self.prefetch_buffer_size)
+
+            # Establish batch size and set prefetch buffer for validation set
+            self.validation_set = self.validation_set.batch(self.batch_size)
+            if self.prefetch_buffer_size is not None:
+                self.validation_set = self.validation_set.prefetch(self.prefetch_buffer_size)
+        
 
     @staticmethod
-    def dataset_size_from_dir(directory, dtype='float32', l_dtype=None):
+    def dataset_size_from_dir(directory, dtype='float32', ldtype=None):
 
         """
         Computes size of the dataset as it was if converted to the particular dtype.
@@ -63,10 +149,10 @@ class DataPipe:
                     img_size += img.nbytes
 
                     # Compute label's size
-                    if(l_dtype == None):
+                    if ldtype is None:
                         label_size += sys.getsizeof(os.path.basename(f))
                     else:
-                        label_size += np.dtype(l_dtype).itemsize
+                        label_size += np.dtype(ldtype).itemsize
 
         return img_size, label_size 
 
@@ -75,13 +161,13 @@ class DataPipe:
     def dataset_from_directory(directories, size=None, dtype='uint8', ldtype='uint8', channels=3):
 
         """
-        Preares a tf.data.Dataset from image data in the directories. Every directory should contain
+        Prepares a tf.data.Dataset from images data in the directories. Every directory should contain
         a set of subfolders named with data labels. Subfolders should hold images for the given label. 
         Labels are encoded as one-hot vectors.
 
         Note
         ----
-        Only JPG-decode files are possible to use
+        Only JPG-encoded files are possible to use
 
         Params
         ------
@@ -94,7 +180,7 @@ class DataPipe:
             type that the image data will be casted to when loaded
         ldtype : str or np.dtype or tf.dtypes
             type of the elements of the categorical vectors that labels will be casted to
-        channels : 
+        channels : int 
             number of image's channel
 
         Note
@@ -123,7 +209,7 @@ class DataPipe:
             tuple
                 (image, label) pair
 
-            """ 
+            """
 
             # Load the raw image from the file
             img = tf.io.read_file(path)
