@@ -1,5 +1,7 @@
 {
     "training" : "data/fruits-360/Training",
     "validation" : "data/fruits-360/Test",
-    "test" : "data/fruits-360/test-multiple_fruits"
+    "test" : "data/fruits-360/test-multiple_fruits",
+    "logs" : "models/example_model/logs",
+    "models" : "models/example_model"
 }

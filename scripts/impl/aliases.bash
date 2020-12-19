@@ -33,10 +33,13 @@ fi
 # Get GPU's fan speed in 0-255 range
 alias fsp="cat /sys/class/hwmon/hwmon3/pwm1"
 
-# set fans' speed to 'auto' mode
+# Get GPU's fan mode
+alias fspmode="cat /sys/class/hwmon/hwmon3/pwm1_enable"
+
+# Set fans' speed to 'auto' mode
 alias fspauto="sudo bash -c 'echo 2 > /sys/class/hwmon/hwmon3/pwm1_enable'"
 
-# set fans' speed to 'manual' mode
+# Set fans' speed to 'manual' mode
 alias fspman="sudo bash -c 'echo 1 > /sys/class/hwmon/hwmon3/pwm1_enable'"
 
 # Set fan speed in 0-255 range (in 'manual' mode)

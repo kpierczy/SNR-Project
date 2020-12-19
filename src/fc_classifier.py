@@ -5,6 +5,7 @@
 # @ Description:
 # =================================================================================================================
 
+import tensorflow as tf
 # Pretrained VGG-19
 from tensorflow.keras.applications import vgg19
 # Model API
@@ -12,15 +13,13 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.models import Model
 # Dedicated datapipe
-from ImageAugmentation import ImageAugmentation
-from DataPipe import DataPipe
+from tools.ImageAugmentation import ImageAugmentation
+from tools.DataPipe          import DataPipe
 # Images manipulation
 from PIL import Image
 # Utilities
-from tensorflow.keras import callbacks
-from datetime import datetime
-import tensorflow as tf
-from glob import glob
+from datetime         import datetime
+from glob             import glob
 import json
 import os
 
@@ -28,22 +27,28 @@ import os
 CONFIG_DIR = 'config/params'
 
 
-# ---------------------------------------- Prepare configuration ----------------------------------------
+# -------------------------------------- Tensorflow configuration ---------------------------------------
 
 # Limit GPU's memory usage
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   try:
-    tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2560)])
+    tf.config.experimental.set_virtual_device_configuration(gpus[0], 
+        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2560)]
+    )
   except RuntimeError as e:
     print(e)
 
+# Verbose data placement info
 # tf.debugging.set_log_device_placement(True)
+
+
+# -------------------------------------- Environment configuration --------------------------------------
 
 PROJECT_HOME = os.environ.get('PROJECT_HOME')
 CONFIG_DIR = os.path.join(PROJECT_HOME, CONFIG_DIR)
 
-# Load directories info
+# Load paths to required directories
 with open(os.path.join(CONFIG_DIR, 'dirs.json')) as dir_file:
     dirs = json.load(dir_file)
 
@@ -59,23 +64,14 @@ with open(os.path.join(CONFIG_DIR, 'fit.json')) as fit_file:
 with open(os.path.join(CONFIG_DIR, 'logging.json')) as logging_file:
     logging_param = json.load(logging_file)
 
-# Get number of classes
-folders = glob(os.path.join(dirs['training'], '*'))
-num_classes = len(folders)
-
-# Establish input_shape
-images = glob(os.path.join(dirs['training'], '*/*.jp*g'))
-im = Image.open(os.path.join(PROJECT_HOME, images[0]))
-input_shape = list(im.size) + [3]
-
-# Establish number of batches per epoch (the whole dataset if 0)
-if fit_param['steps_per_epoch'] != 0:
-    steps_per_epoch = fit_param['steps_per_epoch']
-else:
-    steps_per_epoch = None
-
 
 # --------------------------------------------- Prepare data --------------------------------------------
+
+# Get number of classes
+num_classes = len(glob(os.path.join(dirs['training'], '*')))
+
+# Load an example image from training dataset to establish input_shape
+input_shape = list(Image.open(os.path.join(PROJECT_HOME, glob(os.path.join(dirs['training'], '*/*.jp*g'))[0])).size) + [3]
 
 # Create data pipe (contains training and validation sets)
 pipe = DataPipe()
@@ -85,7 +81,7 @@ pipe.initialize(
     dtype='float32',
     batch_size=fit_param['batch_size'],
     shuffle_buffer_size=pipeline_param['shuffle_buffer_size'],
-    prefetch_buffer_size=tf.data.experimental.AUTOTUNE
+    prefetch_buffer_size=pipeline_param['prefetch_buffer_size'] if pipeline_param['prefetch_buffer_size'] != 0 else tf.data.experimental.AUTOTUNE
 )
 
 # Augment the data pipe
@@ -93,8 +89,8 @@ pipe.training_set = ImageAugmentation(
     rotation_range=pipeline_param['augmentation']['rotation_range'],
     brightness_range=pipeline_param['augmentation']['brightness_range'],
     contrast_range=pipeline_param['augmentation']['contrast_range'],
-    shear_x=pipeline_param['augmentation']['shear_x'],
-    shear_y=pipeline_param['augmentation']['shear_y'],
+    shear_x_range=pipeline_param['augmentation']['shear_x_range'],
+    shear_y_range=pipeline_param['augmentation']['shear_y_range'],
     shear_fill=pipeline_param['augmentation']['shear_fill'],
     vertical_flip=pipeline_param['augmentation']['vertical_flip'],
     horizontal_flip=pipeline_param['augmentation']['horizontal_flip'],
@@ -126,9 +122,9 @@ model = vgg(preprocessing)
 
 # Add Dense layers
 model = Flatten()(model)
-model = Dense(4096, activation='relu')(model)
-model = Dense(4096, activation='relu')(model)
-model = Dense(num_classes, activation='softmax')(model)
+model = Dense(       4096,    activation='relu', bias_initializer='zeros', kernel_initializer=None)(model)
+model = Dense(       4096,    activation='relu', bias_initializer='zeros', kernel_initializer=None)(model)
+model = Dense(num_classes, activation='softmax', bias_initializer='zeros', kernel_initializer=None)(model)
 
 # Compile model
 model = Model(inputs=[model_input], outputs=[model])
@@ -138,13 +134,16 @@ model.compile(
     metrics=fit_param['metrics']
 )
 
+# Load base model's weights
+if fit_param['base_model'] is not None:
+    model.load_weights(fit_param['base_model'])
 
-# --------------------------------------------- Train model ---------------------------------------------
+# ------------------------------------------ Prepare callbacks ------------------------------------------
 
-# Set logging system
-glob_logdir = os.path.join(PROJECT_HOME, 'logs')
-logdir = os.path.join(glob_logdir, datetime.now().strftime('%Y%m%d-%H%M%S'))
-tensorboard_callback = callbacks.TensorBoard(
+# Create a logging callback (Tensorboard)
+logdir = os.path.join(PROJECT_HOME, dirs['logs'])
+logdir = os.path.join(logdir, logging_param["log_name"])
+tensorboard_callback = tf.keras.callbacks.TensorBoard(
     log_dir=logdir, 
     histogram_freq=logging_param['histogram_freq'],
     write_graph=logging_param['write_graph'],
@@ -153,14 +152,30 @@ tensorboard_callback = callbacks.TensorBoard(
     profile_batch=logging_param['profile_batch']
 )
 
+# Create a checkpoint callback
+modeldir = os.path.join(PROJECT_HOME, dirs['models'])
+modeldir = os.path.join(modeldir, 'weights-{epoch:02d}-{val_loss:.2f}.hdf5')
+checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=modeldir,
+    save_weights_only=True,
+    verbose=True,
+    save_freq='epoch'
+
+)
+
+callbacks = [tensorboard_callback, checkpoint_callback]
+
+# --------------------------------------------- Train model ---------------------------------------------
+
 # Start training
 history = model.fit(
     x=pipe.training_set,
-    steps_per_epoch=steps_per_epoch,
-    epochs=fit_param['epochs'],
     validation_data=pipe.validation_set,
+    epochs=fit_param['epochs'],
+    initial_epoch=fit_param['initial_epoch'],
+    steps_per_epoch=fit_param['steps_per_epoch'] if fit_param['steps_per_epoch'] != 0 else None,
+    callbacks=callbacks,
     verbose=fit_param['environment']['verbosity'],
-    callbacks=[tensorboard_callback],
     workers=fit_param['environment']['workers'],
     use_multiprocessing=True
 )

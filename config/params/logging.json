@@ -1,4 +1,5 @@
 {
+    "log_name" : "run_1",
     "histogram_freq" : 0,
     "write_graph" : true,
     "write_images" : false,

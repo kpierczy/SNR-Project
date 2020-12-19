@@ -1,14 +1,15 @@
 {
     "shuffle_buffer_size" : 10000,
+    "prefetch_buffer_size" : 0,
     "augmentation" : {
         "rotation_range" : [0, 0],
         "brightness_range" : [0, 0],
         "contrast_range" : [0, 0],
-        "shear_x" : 0,
-        "shear_y" : 0,
+        "shear_x_range" : [0, 0],
+        "shear_y_range" : [0, 0],
         "shear_fill" : [0, 0, 0],
-        "vertical_flip" : true,
-        "horizontal_flip" : true
+        "vertical_flip" : false,
+        "horizontal_flip" : false
     }
 
 }
