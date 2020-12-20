@@ -15,14 +15,14 @@
 # Show running containers
 alias dps='sudo docker ps'
 
-# Remove all containers.
+# Stop and remove all containers
 alias drm='                                                  \
     if [[ $(sudo docker ps -a -q) != "" ]] > /dev/null; then \
         sudo docker stop $(sudo docker ps -a -q) &&          \
         sudo docker rm $(sudo docker ps -a -q);              \
     fi'
 
-# Remove all containers. Prune intermediate images.
+# Stop and remove all containers. Prune intermediate images.
 alias prune='                                                \
     if [[ $(sudo docker ps -a -q) != "" ]] > /dev/null; then \
         sudo docker stop $(sudo docker ps -a -q) &&          \

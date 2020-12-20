@@ -43,7 +43,7 @@ be proceeeded at the each epoch.
 
 1. "shuffle_buffer_size" : Size of the buffer used to shuffle the dataset (@see tf.data.Dataset.shuffle)
 2. "prefetch_buffer_size" : Number of batches that will be buffered by the CPU during training (multiple workers
-need to be used to make advantage of this buffering)
+need to be used to make advantage of this buffering). If `null` tf.data.experimental.AUTOTUNE will be used.
 3. "augmentation/rotation_range" : range (in degrees) of the random rotations applied to the dataset
 4. "augmentation/brightness_range" : range of the random brightness corrections applied to the dataset
 (@see tf.image.adjust_brightness())

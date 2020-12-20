@@ -51,6 +51,7 @@
 # Handy tools
 
 1. Keras-vis: [https://raghakot.github.io/keras-vis/]
+2. AMD WattMan equivalent for Linux: [https://gitlab.com/corectrl/corectrl/-/wikis/home]
 
 
 # Resources

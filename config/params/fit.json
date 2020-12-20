@@ -4,9 +4,9 @@
     "optimizer" : "adam",
     "loss" : "categorical_crossentropy",
     "metrics" : ["accuracy"],
-    "epochs" : 10,
+    "epochs" : 0,
     "initial_epoch" : 0,
-    "steps_per_epoch" : 0,
+    "steps_per_epoch" : null,
     "environment" : {
         "gpu_memory_cap_mb" : 2560,
         "tf_device_verbosity" : false,

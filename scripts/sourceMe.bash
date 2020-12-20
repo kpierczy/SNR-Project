@@ -25,13 +25,16 @@
 # @ Warning: sourcing this script will install lacking tools with sudo, without asking user at the every 
 #     installation. Before sourcing the script, read content of the scripts/impl/*.bash files or source
 #     this script in an isolated environment.
+#
+# @ Note: The script assumes that `python3` will be used to run project's code and all python packages are
+#     installed using `python3 -m pip install`
 # ================================================================================================================
 
 # Project's home directory
 PROJECT_HOME=~/Desktop/SNR-Project
 
 # Type of the tensorflow installation ['c': CPU, 'nvd': NVIDIA GPU, 'amd': AMD GPU]
-TF_VERSION=amd
+TF_VERSION=c
 
 # Dataset to be downloaded from Kaggle (in form <owner>/<dataset-name>)
 DATASET=moltean/fruits

@@ -26,7 +26,7 @@
 # @ Note: This script should be always run from the main project's directory as it relies on the relative
 #     paths to and from the config files.
 #
-# @ Requirements: All required python packages was listed at config/env/requirements*.py files
+# @ Requirements: All required python packages was listed in config/env/requirements*.py files
 # ================================================================================================================
 
 import tensorflow as tf
@@ -42,8 +42,8 @@ from tools.DataPipe          import DataPipe
 # Images manipulation
 from PIL import Image
 # Utilities
-from datetime         import datetime
-from glob             import glob
+from datetime import datetime
+from glob     import glob
 import pickle
 import json
 import os
@@ -96,7 +96,7 @@ tf.debugging.set_log_device_placement(fit_param['environment']['tf_device_verbos
 num_classes = len(glob(os.path.join(dirs['training'], '*')))
 
 # Load an example image from training dataset to establish input_shape
-input_shape = list(Image.open(os.path.join(PROJECT_HOME, glob(os.path.join(dirs['training'], '*/*.jp*g'))[0])).size) + [3]
+input_shape = list( Image.open(os.path.join(PROJECT_HOME, glob(os.path.join(dirs['training'], '*/*.jp*g'))[0])).size ) + [3]
 
 # Create data pipe (contains training and validation sets)
 pipe = DataPipe()
@@ -106,7 +106,7 @@ pipe.initialize(
     dtype='float32',
     batch_size=fit_param['batch_size'],
     shuffle_buffer_size=pipeline_param['shuffle_buffer_size'],
-    prefetch_buffer_size=pipeline_param['prefetch_buffer_size'] if pipeline_param['prefetch_buffer_size'] != 0 else tf.data.experimental.AUTOTUNE
+    prefetch_buffer_size=pipeline_param['prefetch_buffer_size'] if pipeline_param['prefetch_buffer_size'] else tf.data.experimental.AUTOTUNE
 )
 
 # Augment the data pipe
@@ -212,6 +212,6 @@ history = model.fit(
 # Save training history
 if logging_param['log_name'] is not None:
     historydir  = os.path.join(PROJECT_HOME, dirs['history'])
-    historyname = os.path.join(logdir, logging_param['logname'])
-    with open(historyname) as history_file:
+    historyname = os.path.join(historydir, logging_param['log_name'])
+    with open(historyname, 'wb') as history_file:
         pickle.dump(history.history, history_file)
