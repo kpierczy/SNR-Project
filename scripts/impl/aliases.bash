@@ -1,3 +1,17 @@
+# ================================================================================================================
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2020-12-10 23:06:00
+# @ Modified time: 2020-12-20 17:42:34
+# @ Description:
+#
+#     Sourcing this script will provide the user's terminal with a set of handy commands used widely
+#     during working on the project. The main reason to use these commands is to reduce number of
+#     click's performed by the user when interacting with AMD-GPU based system :*
+#
+# ================================================================================================================
+
+# ----------------------------------------------- Docker utilities -----------------------------------------------
+
 # Show running containers
 alias dps='sudo docker ps'
 
@@ -27,6 +41,7 @@ if [[ $DOCK_IMG != "" ]]; then
 else
     alias dexec="sudo docker exec -it $(dps | awk '/snr-rocm/ {print $1}') bash"
 fi
+
 
 # ----------------------------------------------- GPU fan controll -----------------------------------------------
 

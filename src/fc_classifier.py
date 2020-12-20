@@ -1,9 +1,33 @@
-# =================================================================================================================
+# ================================================================================================================
 # @ Author: Krzysztof Pierczyk
 # @ Create Time: 2020-12-09 18:16:36
-# @ Modified time: 2020-12-11 12:02:21
+# @ Modified time: 2020-12-20 16:55:11
 # @ Description:
-# =================================================================================================================
+#
+#     Script implements an json-config-driven envirenment used to fit a VGG19 model. Before using the
+#     script, the 'sourceMe.bash' script should be sourced to prepare appropriate environment variables.
+#     Alternatively, required 'PROJECT_HOME' variable can be set manually to the absolute path of the
+#     project's home folder.
+#
+#     The script was prepared so that learning workflow could be run without code's modifications.
+#     All parameters configuring the learning process can be adjusted from config/params/*.json config files.
+#     Only modifications of the model's structure require direct interference into the script's code.
+#
+#     The script's workflow:
+#        - look for and open configuration files
+#        - configure tesnorflow's options
+#        - prepare training and validation datasets basing on configured
+#          directories and augmentation options
+#        - build a basic model (load saved weight, if configured)
+#        - prepare training environment (training callbacks)
+#        - run the training
+#        - save training history to the file
+#
+# @ Note: This script should be always run from the main project's directory as it relies on the relative
+#     paths to and from the config files.
+#
+# @ Requirements: All required python packages was listed at config/env/requirements*.py files
+# ================================================================================================================
 
 import tensorflow as tf
 # Pretrained VGG-19
@@ -20,6 +44,7 @@ from PIL import Image
 # Utilities
 from datetime         import datetime
 from glob             import glob
+import pickle
 import json
 import os
 
@@ -27,23 +52,7 @@ import os
 CONFIG_DIR = 'config/params'
 
 
-# -------------------------------------- Tensorflow configuration ---------------------------------------
-
-# Limit GPU's memory usage
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-  try:
-    tf.config.experimental.set_virtual_device_configuration(gpus[0], 
-        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2560)]
-    )
-  except RuntimeError as e:
-    print(e)
-
-# Verbose data placement info
-# tf.debugging.set_log_device_placement(True)
-
-
-# -------------------------------------- Environment configuration --------------------------------------
+# ------------------------------------------- Environment configuration ------------------------------------------
 
 PROJECT_HOME = os.environ.get('PROJECT_HOME')
 CONFIG_DIR = os.path.join(PROJECT_HOME, CONFIG_DIR)
@@ -65,7 +74,23 @@ with open(os.path.join(CONFIG_DIR, 'logging.json')) as logging_file:
     logging_param = json.load(logging_file)
 
 
-# --------------------------------------------- Prepare data --------------------------------------------
+# ------------------------------------------- Tensorflow configuration -------------------------------------------
+
+# Limit GPU's memory usage
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  try:
+    tf.config.experimental.set_virtual_device_configuration(gpus[0], 
+        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=fit_param['environment']['gpu_memory_cap_mb'])]
+    )
+  except RuntimeError as e:
+    print(e)
+
+# Verbose data placement info
+tf.debugging.set_log_device_placement(fit_param['environment']['tf_device_verbosity'])
+
+
+# -------------------------------------------------- Prepare data ------------------------------------------------
 
 # Get number of classes
 num_classes = len(glob(os.path.join(dirs['training'], '*')))
@@ -101,7 +126,7 @@ pipe.training_set = ImageAugmentation(
 pipe.apply_batch()
 
 
-# --------------------------------------------- Build model ---------------------------------------------
+# -------------------------------------------------- Build model -------------------------------------------------
 
 # Construct base model
 vgg = vgg19.VGG19(
@@ -138,34 +163,37 @@ model.compile(
 if fit_param['base_model'] is not None:
     model.load_weights(fit_param['base_model'])
 
-# ------------------------------------------ Prepare callbacks ------------------------------------------
+# ----------------------------------------------- Prepare callbacks ----------------------------------------------
+
+callbacks = []
 
 # Create a logging callback (Tensorboard)
-logdir = os.path.join(PROJECT_HOME, dirs['logs'])
-logdir = os.path.join(logdir, logging_param["log_name"])
-tensorboard_callback = tf.keras.callbacks.TensorBoard(
-    log_dir=logdir, 
-    histogram_freq=logging_param['histogram_freq'],
-    write_graph=logging_param['write_graph'],
-    write_images=logging_param['write_images'],
-    update_freq=logging_param['update_freq'],
-    profile_batch=logging_param['profile_batch']
-)
+if logging_param['log_name'] is not None:
+    logdir = os.path.join(PROJECT_HOME, dirs['logs'])
+    logdir = os.path.join(logdir, logging_param['log_name'])
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=logdir, 
+        histogram_freq=logging_param['histogram_freq'],
+        write_graph=logging_param['write_graph'],
+        write_images=logging_param['write_images'],
+        update_freq=logging_param['update_freq'],
+        profile_batch=logging_param['profile_batch']
+    )
+    callbacks.append(tensorboard_callback)
 
 # Create a checkpoint callback
-modeldir = os.path.join(PROJECT_HOME, dirs['models'])
-modeldir = os.path.join(modeldir, 'weights-{epoch:02d}-{val_loss:.2f}.hdf5')
+modeldir  = os.path.join(PROJECT_HOME, dirs['models'])
+modelname = os.path.join(modeldir, 'weights-{epoch:02d}-{val_loss:.2f}.hdf5')
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=modeldir,
+    filepath=modelname,
     save_weights_only=True,
     verbose=True,
     save_freq='epoch'
-
 )
+callbacks.append(checkpoint_callback)
 
-callbacks = [tensorboard_callback, checkpoint_callback]
 
-# --------------------------------------------- Train model ---------------------------------------------
+# -------------------------------------------------- Train model -------------------------------------------------
 
 # Start training
 history = model.fit(
@@ -173,9 +201,17 @@ history = model.fit(
     validation_data=pipe.validation_set,
     epochs=fit_param['epochs'],
     initial_epoch=fit_param['initial_epoch'],
-    steps_per_epoch=fit_param['steps_per_epoch'] if fit_param['steps_per_epoch'] != 0 else None,
+    steps_per_epoch=fit_param['steps_per_epoch'],
     callbacks=callbacks,
     verbose=fit_param['environment']['verbosity'],
     workers=fit_param['environment']['workers'],
-    use_multiprocessing=True
+    use_multiprocessing=True,
+    shuffle=False
 )
+
+# Save training history
+if logging_param['log_name'] is not None:
+    historydir  = os.path.join(PROJECT_HOME, dirs['history'])
+    historyname = os.path.join(logdir, logging_param['logname'])
+    with open(historyname) as history_file:
+        pickle.dump(history.history, history_file)

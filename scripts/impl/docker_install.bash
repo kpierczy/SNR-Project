@@ -1,11 +1,20 @@
+# ================================================================================================================
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2020-12-10 17:05:55
+# @ Modified time: 2020-12-20 17:50:03
+# @ Description:
+#
+#      Downloads and installs lates stable docker version. If the docker command is found, the script
+#      will return instantly.
+#
+# @note: The script installs docker for amd64 architercture. To change it, modify the docker repository added
+#    in the 3rd step.
+# ================================================================================================================
+
+
+
 # Install docker
 if ! which docker > /dev/null; then
-
-    # ===============================================================
-    # @note: The script installs docker for amd64 architercture.
-    #    To change it, modify the docker repository added in the
-    #    3rd step
-    # ===============================================================
 
     echo -e "\nLOG: Installing docker\n"
 

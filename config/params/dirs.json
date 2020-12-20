@@ -3,5 +3,6 @@
     "validation" : "data/fruits-360/Test",
     "test" : "data/fruits-360/test-multiple_fruits",
     "logs" : "models/example_model/logs",
-    "models" : "models/example_model"
+    "models" : "models/example_model",
+    "history" : "models/example_model/history"
 }

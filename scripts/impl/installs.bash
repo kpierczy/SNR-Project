@@ -1,12 +1,11 @@
-# =============================================================================
-# Script checks all required dependencies, installs:
+# ================================================================================================================
+# Script checks required dependencies and installs it when lacking:
 #    - graphviz (for Keras visualisation)
 #    - pipenv API (if not present)
-#
-# If the TF_VERSION points to amd GPU, installs Docker and a required image.
 # 
-# @note : You should 'source' this script instead of executing.
-# =============================================================================
+# @note : You should 'source' this script instead of executing as it adds some paths into the 'PATH'
+#    environment variable.
+# ================================================================================================================
 
 
 # -------------------------------- Dependencies check ------------------------------------------

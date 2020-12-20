@@ -1,8 +1,17 @@
+# ================================================================================================================
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2020-12-10 15:53:14
+# @ Modified time: 2020-12-20 17:52:58
+# @ Description:
+#
+#      Builds and runs the docker image used to work with AMD-GPU-base systems.
+# ================================================================================================================
+
 # Build the docker image with the preconfigured environment
 if ! sudo docker images | grep $DOCK_IMG > /dev/null; then
     printf "\nLOG: Building a docker image for ROCm environment.\n"
     builder="sudo docker build                                      \
-        -f scripts/rocm.Dockerfile                                  \
+        -f $PROJECT_HOME/scripts/rocm.Dockerfile                    \
         -t $DOCK_IMG                                                \
         --build-arg PROJECT_HOME=${PROJECT_HOME}                    \
         --build-arg TF_VERSION=${TF_VERSION}                        \

@@ -8,6 +8,8 @@
     "initial_epoch" : 0,
     "steps_per_epoch" : 0,
     "environment" : {
+        "gpu_memory_cap_mb" : 2560,
+        "tf_device_verbosity" : false,
         "verbosity" : 1,
         "workers" : 4
     }

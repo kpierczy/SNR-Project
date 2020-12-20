@@ -1,12 +1,24 @@
+# ================================================================================================================
+ # @ Author: Krzysztof Pierczyk
+ # @ Create Time: 2020-12-11 13:40:58
+ # @ Modified time: 2020-12-20 17:45:08
+ # @ Description:
+ #     
+ #     Implementation of the set of the most common image-data augmentation methods gather into the
+ #     single class designed to be used with tf.data.Dataset datasets.
+ #
+ # ================================================================================================================
+
 import tensorflow as tf
 import tensorflow_addons as tfa
 import math
 
+
 class ImageAugmentation:
 
     """
-    ImageAugmentation class represents set of augmentation operations that can be
-    applied to the tf.data.Dataset object.
+    ImageAugmentation class represents set of augmentation operations that can be applied to the 
+    tf.data.Dataset object.
     """
 
     def __init__(self,

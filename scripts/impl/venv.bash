@@ -1,11 +1,14 @@
-# =============================================================================
-# Script sets virtual environment for work with Keras (desired to source
-# if CPU or Nvidia GPU tensorflow version used).
+# ================================================================================================================
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2020-12-09 18:16:36
+# @ Modified time: 2020-12-20 17:54:57
+# @ Description:
 #
-# @note : You should 'source' this script instead of executing.
-# =============================================================================
-
-# ----------------------------------- Set virtualenv ---------------------------------------------
+#     Sets virtual environment for work with Keras (desired to source if CPU or Nvidia GPU tensorflow version
+#     used).
+#
+# @ Note: You should 'source' this script instead of executing.
+# ================================================================================================================
 
 # Create venv folder, if needed 
 if [[ ! -d $PROJECT_HOME/config/venv ]]; then

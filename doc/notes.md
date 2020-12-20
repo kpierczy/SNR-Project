@@ -4,7 +4,7 @@
     - Measure dataset's size                             [ <+> ]
     - Choose data loading scheme depending on the size:  [ <+> ]
         - dataset (data fits into memory)                [  +  ]
-        - generator (data does not fit into memory)      [  -  ]
+        - generator (data does not fit into memory)      [  +  ]
     - Choose the training batch'es size                  [ <+> ]
     - Perform data preprocessing                         [ <+> ]
         - scaling                                        [  +  ]
@@ -20,14 +20,14 @@
     - choose the optimiser                               [ <+> ]
     - choose the metrics to be observed                  [ <+> ]
 
-3. Train the model
-    - save the model each X epochs
-    - log metrics every epoch
-    - observe metrics:
-        - strop the training when metrics plateau out
-        - lower the learning rate
-        - resume the training
-    - save training history at the end of the training
+3. Train the model                                       
+    - save the model each X epochs                       [ <+> ]
+    - log metrics every epoch                            [ <+> ]
+    - observe metrics:                                   [ <+> ]
+        - stop the training when metrics plateau out     [  +  ]
+        - lower the learning rate                        [  +  ]
+        - resume the training                            [  +  ]
+    - save training history at the end of the training   [ <+> ]
 
 4. Visualize the results
     - visualise the training and test datasets

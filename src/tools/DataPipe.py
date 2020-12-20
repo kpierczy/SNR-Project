@@ -1,3 +1,15 @@
+# ================================================================================================================
+ # @ Author: Krzysztof Pierczyk
+ # @ Create Time: 2020-12-11 13:40:58
+ # @ Modified time: 2020-12-20 17:45:03
+ # @ Description:
+ #     
+ #     Implementation of the basic data pipeline used for tesnroflow models' training. The aim of the class
+ #     is to provide easy-to-use, performance-optimised pipeline for the medium-size image datasets stored
+ #     in the predefined folders' structure.
+ #
+ # ================================================================================================================
+
 import os
 import sys
 import keras
@@ -10,16 +22,33 @@ from functools import partial
 class DataPipe:
 
     """
-    Data Pipe class implements basic set of methods used to load and preprocess image
-    data as well as to produce data batches in the tensorflow-generator style. It also
-    contains some static methods for inspecting and manipulating datasets.
+    Data Pipe class implements basic set of methods used to load labeled image data as well as to produce data
+    batches in the tensorflow-dataset-generator style. It also contains some static methods for inspecting and
+    manipulating datasets. The image dataset to be loaded with the DataPipe class should be organised in the
+    specific way:
+
+        data_root_folder/
+        |--- label_1/
+        |    |--- image_1.jpg
+        |    |--- image_2.jpg
+        |    |--- ...
+        |--- label_2/
+        |    |--- image_1.jpg
+        |    |--- image_2.jpg
+        |    |--- ...
+        |--- ...
+
+    Training and validation datasets don't have to be hold in the same directory
+
+    Note
+    ----
+    At the moment all images should be given in a JPG-decoded format (i.e. '*.jpg', '*.jpeg').
     """
 
     def __init__(self):
 
         """
-        Initializes a new DataPipe. The self.initialize() call is required before the
-        pipe can be used.
+        Initializes a new DataPipe. The self.initialize() call is required before the pipe can be used.
         """
 
         # Internal datasets
@@ -66,6 +95,16 @@ class DataPipe:
             size of the buffer used to prefetch the data (@see tf.data.Dataset.prefetch())
             if None, prefetching is not performed
 
+        Note
+        ----
+        Batching operation is not applied until self.apply_batch() method is called. The reason for this
+        is to give a mechanism to apply per-training-example data modifications before grouping them
+        into batches.
+
+        Note
+        ----
+        Prefetching of the data happens in the batch-wise fashion. For this reason prefetching will also
+        be not-active until self.apply_batch() call.
         """
 
         # Create and shuffle a training set
@@ -108,9 +147,8 @@ class DataPipe:
     def dataset_size_from_dir(directory, dtype='float32', ldtype=None):
 
         """
-        Computes size of the dataset as it was if converted to the particular dtype.
-        The directory should contai a set of folders named with the data's labels.
-        Every subdirectory should hold set of images of the given class.
+        Computes size of the dataset as it was if converted to the particular dtype. The structure of the 
+        directory should be as given in the DataPipe class' description.
 
         Params
         ------
@@ -161,13 +199,8 @@ class DataPipe:
     def dataset_from_directory(directories, size=None, dtype='uint8', ldtype='uint8', channels=3):
 
         """
-        Prepares a tf.data.Dataset from images data in the directories. Every directory should contain
-        a set of subfolders named with data labels. Subfolders should hold images for the given label. 
-        Labels are encoded as one-hot vectors.
-
-        Note
-        ----
-        Only JPG-encoded files are possible to use
+        Prepares a tf.data.Dataset from images data in the directories. The structure of the directory should
+        be as given in the DataPipe class' description.
 
         Params
         ------
@@ -185,12 +218,16 @@ class DataPipe:
 
         Note
         ----
+        At the moment all images should be given in a JPG-decoded format (i.e. '*.jpg', '*.jpeg').
+        
+        Note
+        ----
         If size=None, sizes of all images should be equal
 
         Returns
         -------
-        if.data.Dataset
-            dataset of (image, label) tuples
+        list of tf.data.Dataset
+            list of dataset containing (image, label) tuples
 
         """
 
