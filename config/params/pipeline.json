@@ -1,5 +1,5 @@
 {
-    "shuffle_buffer_size" : 10000,
+    "shuffle_buffer_size" : 5000,
     "prefetch_buffer_size" : null,
     "augmentation" : {
         "rotation_range" : [0, 0],

@@ -1,8 +1,11 @@
 {
     "log_name" : "run_1",
-    "histogram_freq" : 0,
-    "write_graph" : true,
-    "write_images" : false,
+    "histogram_freq" : 1,
+    "cm_freq" : 5,
+    "cm_raw_ext" : "pdf",
+    "cm_size" : [150, 150],
     "update_freq" : "epoch",
-    "profile_batch" : 2
+    "write_graph" : false,
+    "write_images" : false,
+    "profile_batch" : 0
 }

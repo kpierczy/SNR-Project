@@ -59,3 +59,13 @@ alias fspman="sudo bash -c 'echo 1 > /sys/class/hwmon/hwmon3/pwm1_enable'"
 
 # Set fan speed in 0-255 range (in 'manual' mode)
 fspset() { sudo bash -c "echo $1 > /sys/class/hwmon/hwmon3/pwm1"; }
+
+
+# --------------------------------------------- Neural nets workflow ---------------------------------------------
+
+# Clear all models logs and history files from the given mode's directory
+nncl() {
+    sudo rm -rf models/$1/logs/*
+    sudo rm -rf models/$1/history/*
+    sudo rm -rf models/$1/*.hdf5
+}

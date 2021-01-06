@@ -37,8 +37,9 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.models import Model
 # Dedicated datapipe
-from tools.ImageAugmentation import ImageAugmentation
-from tools.DataPipe          import DataPipe
+from tools.ImageAugmentation       import ImageAugmentation
+from tools.DataPipe                import DataPipe
+from tools.ConfusionMatrixCallback import ConfusionMatrixCallback
 # Images manipulation
 from PIL import Image
 # Utilities
@@ -151,17 +152,24 @@ model = Dense(       4096,    activation='relu', bias_initializer='zeros', kerne
 model = Dense(       4096,    activation='relu', bias_initializer='zeros', kernel_initializer=None)(model)
 model = Dense(num_classes, activation='softmax', bias_initializer='zeros', kernel_initializer=None)(model)
 
+# Initialize optimizer
+optimizer = tf.keras.optimizers.get({
+    "class_name": fit_param['optimization']['optimizer'],
+    "config": {"learning_rate": fit_param['optimization']['learning_rate']['init']}}
+)
+
 # Compile model
 model = Model(inputs=[model_input], outputs=[model])
 model.compile(
-    loss=fit_param['loss'],
-    optimizer=fit_param['optimizer'],
+    loss=fit_param['optimization']['loss'],
+    optimizer=optimizer,
     metrics=fit_param['metrics']
 )
 
 # Load base model's weights
 if fit_param['base_model'] is not None:
     model.load_weights(fit_param['base_model'])
+
 
 # ----------------------------------------------- Prepare callbacks ----------------------------------------------
 
@@ -191,6 +199,32 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_freq='epoch'
 )
 callbacks.append(checkpoint_callback)
+
+# Create a confusion matrix callback
+class_folders = glob(os.path.join(dirs['validation'], '*'))
+class_names = [os.path.basename(folder) for folder in class_folders]
+class_names.sort()
+cm_callback = ConfusionMatrixCallback(
+    logdir=logdir,
+    validation_set=pipe.validation_set,
+    class_names=class_names,
+    freq=logging_param['cm_freq'],
+    fig_size=logging_param['cm_size'],
+    raw_fig_type=logging_param['cm_raw_ext']
+)
+callbacks.append(cm_callback)
+
+# Create learning rate scheduler callback
+lr_callback = tf.keras.callbacks.ReduceLROnPlateau(
+    monitor=fit_param['optimization']['learning_rate']['indicator'],
+    factor=fit_param['optimization']['learning_rate']['reduce_factor'],
+    patience=fit_param['optimization']['learning_rate']['patience'],
+    verbose=fit_param['optimization']['learning_rate']['verbosity'],
+    min_delta=fit_param['optimization']['learning_rate']['min_delta'],
+    cooldown=fit_param['optimization']['learning_rate']['cooldown'],
+    min_lr=fit_param['optimization']['learning_rate']['min']
+)
+callbacks.append(lr_callback)
 
 
 # -------------------------------------------------- Train model -------------------------------------------------
