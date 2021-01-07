@@ -18,6 +18,9 @@ fi
 # Source virtual environment
 source $PROJECT_HOME/config/env/venv/bin/activate
 
+# Update pip
+python3 -m pip install --upgrade pip
+
 # Install required packages in the virtual environment
 echo -e "\nLOG: Installing required packages in the virtual environment\n"
 python3 -m pip install -r $PROJECT_HOME/config/env/requirements.py

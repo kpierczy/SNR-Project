@@ -1,10 +1,15 @@
 # ================================================================================================================
-# Script checks required dependencies and installs it when lacking:
-#    - graphviz (for Keras visualisation)
-#    - pipenv API (if not present)
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2020-12-09 18:20:23
+# @ Modified time: 2020-12-20 18:15:56
+# @ Description:
+#
+#     Script checks required dependencies and installs it when lacking:
+#     - graphviz (for Keras visualisation)
+#     - pipenv API (if not present)
 # 
-# @note : You should 'source' this script instead of executing as it adds some paths into the 'PATH'
-#    environment variable.
+# @ Note : You should 'source' this script instead of executing as it adds some paths into the 'PATH'
+#     environment variable.
 # ================================================================================================================
 
 

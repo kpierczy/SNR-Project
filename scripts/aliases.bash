@@ -8,10 +8,12 @@
 #     during working on the project. The main reason to use these commands is to reduce number of
 #     click's performed by the user when interacting with AMD-GPU based system :*
 #
+# @ Note: Modify it to suit your needs!
 # ================================================================================================================
 
 # ----------------------------------------------- Docker utilities -----------------------------------------------
 
+if [[ $TF_VERSION == "amd" ]]; then
 if which docker > /dev/null; then
 
     # Show running containers
@@ -44,11 +46,12 @@ if which docker > /dev/null; then
         alias dexec="sudo docker exec -it $(dps | awk '/snr-rocm/ {print $1}') bash"
     fi
 fi
+fi
 
 
 # --------------------------------------------- Neural nets workflow ---------------------------------------------
 
-# Clear all models logs and history files from the given mode's directory
+# Clear all models logs, history files and test evaluations from the given model's directory
 nncl() {
     sudo rm -rf models/$1/logs/*
     sudo rm -rf models/$1/history/*
@@ -56,7 +59,7 @@ nncl() {
     sudo rm -rf models/$1/*.hdf5
 }
 
-# Opens tensorboard with data of the given model
+# Opens tensorboard with data of the given model's directory
 tboard() {
     tensorboard --logdir_spec training:models/$1/logs,test:models/$1/test
 }

@@ -1,3 +1,14 @@
+# ================================================================================================================
+ # @ Author: Krzysztof Pierczyk
+ # @ Create Time: 2021-01-06 22:17:58
+ # @ Modified time: 2021-01-07 22:18:19
+ # @ Description:
+ #     
+ #     Implementation of the custom Keras callback periodically generating Confusion Matrix for the
+ #     Validation set.
+ #
+ # ================================================================================================================
+
 import io
 import os
 import tensorflow as tf

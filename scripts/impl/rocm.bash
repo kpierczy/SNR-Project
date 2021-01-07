@@ -4,7 +4,8 @@
 # @ Modified time: 2020-12-20 17:52:58
 # @ Description:
 #
-#      Builds and runs the docker image used to work with AMD-GPU-base systems.
+#     Builds and runs the docker image used to work with AMD-GPU-base systems.
+#
 # ================================================================================================================
 
 # Build the docker image with the preconfigured environment

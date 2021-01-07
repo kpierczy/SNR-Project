@@ -267,7 +267,7 @@ if pipe.test_set is not None and logging_param['log_name'] is not None:
 
     testdir = os.path.join(PROJECT_HOME, dirs['test'])
 
-    # Update Confusion Matrix callback
+    # Prepare a new Confusion Matrix callback for the test set
     cm_callback = ConfusionMatrixCallback(
         logdir=os.path.join(testdir, 'cm'),
         validation_set=pipe.test_set,
@@ -278,6 +278,8 @@ if pipe.test_set is not None and logging_param['log_name'] is not None:
         to_save=logging_param['cm_to_save'],
         basename=logging_param['log_name']
     )
+
+    # Wrap Confusion Matrix callback to be usable with tf.keras.Model.evaluate() method
     cm_callback.set_model(model)
     cm_callback_decorator = \
         tf.keras.callbacks.LambdaCallback(on_test_end=lambda logs: cm_callback.on_epoch_end('', logs))

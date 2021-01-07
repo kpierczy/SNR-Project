@@ -34,7 +34,7 @@
 PROJECT_HOME=~/Desktop/SNR-Project
 
 # Type of the tensorflow installation ['c': CPU, 'nvd': NVIDIA GPU, 'amd': AMD GPU]
-TF_VERSION=amd
+TF_VERSION=c
 
 # Dataset to be downloaded from Kaggle (in form <owner>/<dataset-name>)
 DATASET=moltean/fruits
@@ -50,15 +50,10 @@ export DATASET=$DATASET
 export KAGGLE_CONFIG_DIR=$PROJECT_HOME/config/kaggle
 export DOCK_IMG=$DOCK_IMG
 
-
-# --------------------------------------------- Handy aliases ----------------------------------------------------
-
-if [[ $TF_VERSION == "amd" ]]; then
-    source $PROJECT_HOME/scripts/impl/aliases.bash
-fi
-
-
 # --------------------------------------------- Scripts calls ----------------------------------------------------
+
+# Handy aliases
+source $PROJECT_HOME/scripts/aliases.bash
 
 # Download data set
 $PROJECT_HOME/scripts/impl/data.bash

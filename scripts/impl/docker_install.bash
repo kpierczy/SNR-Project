@@ -4,11 +4,11 @@
 # @ Modified time: 2020-12-20 17:50:03
 # @ Description:
 #
-#      Downloads and installs lates stable docker version. If the docker command is found, the script
-#      will return instantly.
+#     Downloads and installs lates stable docker version. If the docker command is found, the script
+#     will return instantly.
 #
-# @note: The script installs docker for amd64 architercture. To change it, modify the docker repository added
-#    in the 3rd step.
+# @ Note: The script installs docker for amd64 architercture. To change it, modify the docker repository added
+#     in the 3rd step.
 # ================================================================================================================
 
 
