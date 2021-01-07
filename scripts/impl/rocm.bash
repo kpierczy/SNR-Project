@@ -25,10 +25,11 @@ if ! sudo docker images | grep $DOCK_IMG > /dev/null; then
 fi
 
 # Run the container
-printf "\nLOG: Running virtual environment for ROCm tensorflow \n"
+printf "\nLOG: Running virtual environment for ROCm tensorflow \n\n"
 sudo docker run                            \
     -it                                    \
     --rm                                   \
+    --name $DOCK_IMG                       \
     --network=host                         \
     --device=/dev/kfd                      \
     --device=/dev/dri                      \
@@ -39,4 +40,4 @@ sudo docker run                            \
     --security-opt seccomp=unconfined      \
     -v $HOME/dockerx:/dockerx              \
     -v $PROJECT_HOME:$PROJECT_HOME         \
-    $DOCK_IMG
+    $DOCK_IMG    

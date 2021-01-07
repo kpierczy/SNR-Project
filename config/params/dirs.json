@@ -1,8 +1,8 @@
 {
     "training" : "data/fruits-360/Training",
     "validation" : "data/fruits-360/Test",
-    "test" : "data/fruits-360/test-multiple_fruits",
-    "logs" : "models/perceptron/logs",
     "models" : "models/perceptron",
-    "history" : "models/perceptron/history"
+    "logs" : "models/perceptron/logs",
+    "history" : "models/perceptron/history",
+    "test" : "models/perceptron/test"
 }

@@ -23,6 +23,9 @@
 #        - run the training
 #        - save training history to the file
 #
+#     As the learning rate scheduler the tf.keras.callbacks.ReduceLROnPlateau object is used. It's parameters
+#     can be tuned from the fit.json file.
+#
 # @ Note: This script should be always run from the main project's directory as it relies on the relative
 #     paths to and from the config files.
 #
@@ -81,9 +84,11 @@ with open(os.path.join(CONFIG_DIR, 'logging.json')) as logging_file:
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   try:
-    tf.config.experimental.set_virtual_device_configuration(gpus[0], 
-        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=fit_param['environment']['gpu_memory_cap_mb'])]
-    )
+    tf.config.experimental.set_virtual_device_configuration(gpus[0], [
+        tf.config.experimental.VirtualDeviceConfiguration(
+            memory_limit=fit_param['environment']['gpu_memory_cap_mb']
+        )
+    ])
   except RuntimeError as e:
     print(e)
 
@@ -97,17 +102,20 @@ tf.debugging.set_log_device_placement(fit_param['environment']['tf_device_verbos
 num_classes = len(glob(os.path.join(dirs['training'], '*')))
 
 # Load an example image from training dataset to establish input_shape
-input_shape = list( Image.open(os.path.join(PROJECT_HOME, glob(os.path.join(dirs['training'], '*/*.jp*g'))[0])).size ) + [3]
+input_shape = \
+    list( Image.open(os.path.join(PROJECT_HOME, glob(os.path.join(dirs['training'], '*/*.jp*g'))[0])).size ) + [3]
 
 # Create data pipe (contains training and validation sets)
 pipe = DataPipe()
 pipe.initialize(
     dirs['training'],
     dirs['validation'],
+    val_split=pipeline_param['valid_split'],
+    test_split=pipeline_param['test_split'],
     dtype='float32',
     batch_size=fit_param['batch_size'],
     shuffle_buffer_size=pipeline_param['shuffle_buffer_size'],
-    prefetch_buffer_size=pipeline_param['prefetch_buffer_size'] if pipeline_param['prefetch_buffer_size'] else tf.data.experimental.AUTOTUNE
+    prefetch_buffer_size=pipeline_param['prefetch_buffer_size']
 )
 
 # Augment the data pipe
@@ -189,9 +197,25 @@ if logging_param['log_name'] is not None:
     )
     callbacks.append(tensorboard_callback)
 
+# Create a confusion matrix callback
+if logging_param['log_name'] is not None:
+    class_folders = glob(os.path.join(dirs['validation'], '*'))
+    class_names = [os.path.basename(folder) for folder in class_folders]
+    class_names.sort()
+    cm_callback = ConfusionMatrixCallback(
+        logdir=os.path.join(logdir, 'validation/cm'),
+        validation_set=pipe.validation_set,
+        class_names=class_names,
+        freq=logging_param['cm_freq'],
+        fig_size=logging_param['cm_size'],
+        raw_fig_type=logging_param['cm_raw_ext'],
+        to_save=logging_param['cm_to_save']
+    )
+    callbacks.append(cm_callback)
+
 # Create a checkpoint callback
 modeldir  = os.path.join(PROJECT_HOME, dirs['models'])
-modelname = os.path.join(modeldir, 'weights-{epoch:02d}-{val_loss:.2f}.hdf5')
+modelname = os.path.join(modeldir, 'weights-epoch_{epoch:02d}-val_loss_{val_loss:.2f}.hdf5')
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=modelname,
     save_weights_only=True,
@@ -199,20 +223,6 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_freq='epoch'
 )
 callbacks.append(checkpoint_callback)
-
-# Create a confusion matrix callback
-class_folders = glob(os.path.join(dirs['validation'], '*'))
-class_names = [os.path.basename(folder) for folder in class_folders]
-class_names.sort()
-cm_callback = ConfusionMatrixCallback(
-    logdir=logdir,
-    validation_set=pipe.validation_set,
-    class_names=class_names,
-    freq=logging_param['cm_freq'],
-    fig_size=logging_param['cm_size'],
-    raw_fig_type=logging_param['cm_raw_ext']
-)
-callbacks.append(cm_callback)
 
 # Create learning rate scheduler callback
 lr_callback = tf.keras.callbacks.ReduceLROnPlateau(
@@ -239,13 +249,51 @@ history = model.fit(
     callbacks=callbacks,
     verbose=fit_param['environment']['verbosity'],
     workers=fit_param['environment']['workers'],
-    use_multiprocessing=True,
+    use_multiprocessing=True if fit_param['environment']['workers'] != 1 else False,
     shuffle=False
 )
 
 # Save training history
 if logging_param['log_name'] is not None:
-    historydir  = os.path.join(PROJECT_HOME, dirs['history'])
-    historyname = os.path.join(historydir, logging_param['log_name'])
+    historydir = os.path.join(PROJECT_HOME, dirs['history'])
+    historyname = os.path.join(historydir, logging_param['log_name'] + '.pickle')
     with open(historyname, 'wb') as history_file:
         pickle.dump(history.history, history_file)
+
+
+# --------------------------------------------------- Test model -------------------------------------------------
+
+if pipe.test_set is not None and logging_param['log_name'] is not None:
+
+    testdir = os.path.join(PROJECT_HOME, dirs['test'])
+
+    # Update Confusion Matrix callback
+    cm_callback = ConfusionMatrixCallback(
+        logdir=os.path.join(testdir, 'cm'),
+        validation_set=pipe.test_set,
+        class_names=class_names,
+        freq=logging_param['cm_freq'],
+        fig_size=logging_param['cm_size'],
+        raw_fig_type=logging_param['cm_raw_ext'],
+        to_save=logging_param['cm_to_save'],
+        basename=logging_param['log_name']
+    )
+    cm_callback.set_model(model)
+    cm_callback_decorator = \
+        tf.keras.callbacks.LambdaCallback(on_test_end=lambda logs: cm_callback.on_epoch_end('', logs))
+
+    # Evaluate test score
+    test_dict = model.evaluate(
+        x=pipe.test_set,
+        verbose=fit_param['environment']['verbosity'],
+        workers=fit_param['environment']['workers'],
+        use_multiprocessing=True if fit_param['environment']['workers'] != 1 else False,
+        return_dict=True,
+        callbacks=[cm_callback_decorator]
+    )
+
+    # Save test score
+    if logging_param['log_name'] is not None:
+        testname = os.path.join(testdir, logging_param['log_name'] + '.pickle')
+        with open(testname, 'wb') as test_file:
+            pickle.dump(test_dict, test_file)

@@ -1,4 +1,6 @@
 {
+    "valid_split" : 1,
+    "test_split" : 1,
     "shuffle_buffer_size" : 5000,
     "prefetch_buffer_size" : null,
     "augmentation" : {

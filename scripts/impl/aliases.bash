@@ -12,53 +12,38 @@
 
 # ----------------------------------------------- Docker utilities -----------------------------------------------
 
-# Show running containers
-alias dps='sudo docker ps'
+if which docker > /dev/null; then
 
-# Stop and remove all containers
-alias drm='                                                  \
-    if [[ $(sudo docker ps -a -q) != "" ]] > /dev/null; then \
-        sudo docker stop $(sudo docker ps -a -q) &&          \
-        sudo docker rm $(sudo docker ps -a -q);              \
-    fi'
+    # Show running containers
+    alias dps='sudo docker ps'
 
-# Stop and remove all containers. Prune intermediate images.
-alias prune='                                                \
-    if [[ $(sudo docker ps -a -q) != "" ]] > /dev/null; then \
-        sudo docker stop $(sudo docker ps -a -q) &&          \
-        sudo docker rm $(sudo docker ps -a -q);              \
-    fi && sudo docker image prune'
+    # Stop and remove all containers
+    alias drm='                                                  \
+        if [[ $(sudo docker ps -a -q) != "" ]] > /dev/null; then \
+            sudo docker stop $(sudo docker ps -a -q) &&          \
+            sudo docker rm $(sudo docker ps -a -q);              \
+        fi'
 
-# Show docker images
-alias dimg='sudo docker images'
+    # Stop and remove all containers. Prune intermediate images.
+    alias prune='                                                \
+        if [[ $(sudo docker ps -a -q) != "" ]] > /dev/null; then \
+            sudo docker stop $(sudo docker ps -a -q) &&          \
+            sudo docker rm $(sudo docker ps -a -q);              \
+        fi && sudo docker image prune'
 
-# Remove a docker image
-alias dimgrm='sudo docker rmi'
+    # Show docker images
+    alias dimg='sudo docker images'
 
-# Executes an additional bash in the running environment
-if [[ $DOCK_IMG != "" ]]; then
-    alias dexec="sudo docker exec -it $(dps | awk -v i=$DOCK_IMG '/i/ {print $1}') bash"
-else
-    alias dexec="sudo docker exec -it $(dps | awk '/snr-rocm/ {print $1}') bash"
+    # Remove a docker image
+    alias dimgrm='sudo docker rmi'
+
+    # Executes an additional bash in the running environment
+    if [[ $DOCK_IMG != "" ]]; then
+        alias dexec="sudo docker exec -it $(dps | awk -v i=$DOCK_IMG '/i/ {print $1}') bash"
+    else
+        alias dexec="sudo docker exec -it $(dps | awk '/snr-rocm/ {print $1}') bash"
+    fi
 fi
-
-
-# ----------------------------------------------- GPU fan controll -----------------------------------------------
-
-# Get GPU's fan speed in 0-255 range
-alias fsp="cat /sys/class/hwmon/hwmon3/pwm1"
-
-# Get GPU's fan mode
-alias fspmode="cat /sys/class/hwmon/hwmon3/pwm1_enable"
-
-# Set fans' speed to 'auto' mode
-alias fspauto="sudo bash -c 'echo 2 > /sys/class/hwmon/hwmon3/pwm1_enable'"
-
-# Set fans' speed to 'manual' mode
-alias fspman="sudo bash -c 'echo 1 > /sys/class/hwmon/hwmon3/pwm1_enable'"
-
-# Set fan speed in 0-255 range (in 'manual' mode)
-fspset() { sudo bash -c "echo $1 > /sys/class/hwmon/hwmon3/pwm1"; }
 
 
 # --------------------------------------------- Neural nets workflow ---------------------------------------------
@@ -67,5 +52,11 @@ fspset() { sudo bash -c "echo $1 > /sys/class/hwmon/hwmon3/pwm1"; }
 nncl() {
     sudo rm -rf models/$1/logs/*
     sudo rm -rf models/$1/history/*
+    sudo rm -rf models/$1/test/*
     sudo rm -rf models/$1/*.hdf5
+}
+
+# Opens tensorboard with data of the given model
+tboard() {
+    tensorboard --logdir_spec training:models/$1/logs,test:models/$1/test
 }

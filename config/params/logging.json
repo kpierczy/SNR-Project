@@ -1,8 +1,9 @@
 {
     "log_name" : "run_1",
     "histogram_freq" : 1,
-    "cm_freq" : 5,
-    "cm_raw_ext" : "pdf",
+    "cm_freq" : 10,
+    "cm_raw_ext" : "png",
+    "cm_to_save" : "both",
     "cm_size" : [150, 150],
     "update_freq" : "epoch",
     "write_graph" : false,

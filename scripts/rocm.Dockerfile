@@ -36,7 +36,7 @@ COPY ./config/env/requirements.py ${HOME}/requirements.py
 RUN /bin/bash -c "apt-get update && apt-get -y install sudo"
 
 # Install required utilities 
-RUN /bin/bash -c "source ${HOME}/installs.bash"
+RUN ["/bin/bash", "-c", "source ${HOME}/installs.bash"]
 # Install python packages
 RUN /bin/bash -c "python3 -m pip install -r ${HOME}/requirements.py"
 RUN /bin/bash -c "python3 -m pip install -r ${HOME}/requirements_amd.py"

@@ -47,7 +47,7 @@ DOCK_IMG='snr-rocm'
 export PROJECT_HOME=$PROJECT_HOME
 export TF_VERSION=$TF_VERSION
 export DATASET=$DATASET
-export KAGGLE_CONFIG_DIR=$PROJECT_HOME/config/kaggle#
+export KAGGLE_CONFIG_DIR=$PROJECT_HOME/config/kaggle
 export DOCK_IMG=$DOCK_IMG
 
 

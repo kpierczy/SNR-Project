@@ -1,6 +1,6 @@
 {
     "base_model" : null,
-    "batch_size" : 128,
+    "batch_size" : 64,
     "optimization" : {
         "optimizer" : "adam",
         "loss" : "categorical_crossentropy",
@@ -10,13 +10,13 @@
             "min" : 0,
             "min_delta" : 0.000001,
             "reduce_factor": 0.1,
-            "patience" : 8,
+            "patience" : 10,
             "cooldown" : 0,
             "verbosity" : 1
         }
     },    
     "metrics" : ["accuracy"],
-    "epochs" : 50,
+    "epochs" : 60,
     "initial_epoch" : 0,
     "steps_per_epoch" : null,
     "environment" : {

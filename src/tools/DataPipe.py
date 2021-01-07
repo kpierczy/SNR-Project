@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2020-12-11 13:40:58
- # @ Modified time: 2020-12-20 17:45:03
+ # @ Modified time: 2021-01-07 21:48:48
  # @ Description:
  #     
  #     Implementation of the basic data pipeline used for tesnroflow models' training. The aim of the class
@@ -38,7 +38,8 @@ class DataPipe:
         |    |--- ...
         |--- ...
 
-    Training and validation datasets don't have to be hold in the same directory
+    Training and validation datasets don't have to be hold in the same directory. The DataPipe class is able also
+    to extract some portion of the validation dataset to create the third, test dataset.
 
     Note
     ----
@@ -49,11 +50,30 @@ class DataPipe:
 
         """
         Initializes a new DataPipe. The self.initialize() call is required before the pipe can be used.
+
+        Attributes
+        ----------
+        self.training_set : None or tf.data.Dataset
+            training dataset initialized at self.initialize(...) call
+        self.validation_set : None or tf.data.Dataset
+            validation dataset initialized at self.initialize(...) call
+        self.test_set : None or tf.data.Dataset
+            test dataset initialized at self.initialize(...)
+            if 'self.test_split' attribute is None, the self.test_set is None
+        self.test_split : Unsigned Int
+            ration of validation:test (like test_split:1) datasets sizes
+            if 0, no test dataset is created
+        self.initialized : bool
+            True if self.initialize(...) method was already called
+        self.batched : bool
+            True if self.apply_batch() method was already called
         """
 
         # Internal datasets
         self.training_set = None
         self.validation_set = None
+        self.test_set = None
+        self.test_split = 0
 
         # Values hold to be applied on self.apply_batch() call
         self.batch_size = None
@@ -67,6 +87,8 @@ class DataPipe:
     def initialize(self,
         training_dir, 
         validation_dir,
+        val_split=1,
+        test_split=0,
         dtype='uint8',
         ldtype='uint8',
         batch_size=64, 
@@ -74,7 +96,9 @@ class DataPipe:
         prefetch_buffer_size=None
     ):
         """
-        Initializes new training and validation datasets hold by the object.
+        Initializes new training, validation and test datasets hold by the object. Image data 
+        is loaded from the given directories. The test dataset is created by taking out part of
+        the validation dataset in ratio defined by val_split:test_split.
 
         Params
         ------
@@ -82,6 +106,12 @@ class DataPipe:
             directory of the training data (@see DataPipe.dataset_from_directory())
         validation_dir : string
             directory of the validation data (@see DataPipe.dataset_from_directory())
+        val_split : Unsigned Int
+            ratio of validation:test (like valid_split:test_split) datasets sizes
+            if 0, no validation set is initialized
+        test_split : Unsigned Int
+            ratio of validation:test (like valid_split:test_split) datasets sizes
+            if 0, no test set is initialized
         dtype : string or np.dtype
             type of the images' representation
         ldtype : string or np.dtype
@@ -93,7 +123,14 @@ class DataPipe:
             if None, shuffling is not performed
         prefetch_buffer_size : int or None
             size of the buffer used to prefetch the data (@see tf.data.Dataset.prefetch())
-            if None, prefetching is not performed
+            if None, buffer size is autotuned
+            if 0, prefetching is not performed.
+
+        Note
+        ----
+        Test dataset split is performed deterministically for the given 'validation_dir' and 'val_split'
+        and 'test_split' ratios. Moreover object sorts the original validation set by classes/examples
+        names before splitting and tries to choose test examples evenly.
 
         Note
         ----
@@ -105,18 +142,49 @@ class DataPipe:
         ----
         Prefetching of the data happens in the batch-wise fashion. For this reason prefetching will also
         be not-active until self.apply_batch() call.
+
+        To Do
+        -----
+        When tf.data.Dataset is produced using tf.data.Dataset.filter, the overall size of the set is
+        set to 'unkown'. Therefore progress bar showed during evaluation of the test set displays
+        'X/Unknown' and does not give estimation of the time left. It's not really important when
+        playing with small datasets, nonetheless annoying. Fix it!
         """
 
         # Create and shuffle a training set
         self.training_set = self.dataset_from_directory([training_dir], dtype=dtype, ldtype=ldtype)[training_dir]
         if shuffle_buffer_size is not None:
             self.training_set = self.training_set.shuffle(shuffle_buffer_size)
-        # Create a validation set
-        self.validation_set = self.dataset_from_directory([validation_dir], dtype=dtype, ldtype=ldtype)[validation_dir]
 
+        # Enumerate examples from the validation directory
+        ds = self.dataset_from_directory([validation_dir], dtype=dtype, ldtype=ldtype)[validation_dir]
+        enum_ds = ds.enumerate()
+
+        def test_filter(i, data):
+            return tf.math.less(tf.math.floormod(i, val_split + test_split), test_split)
+
+        def val_filter(i, data):
+            return tf.math.greater_equal(tf.math.floormod(i, val_split + test_split), test_split)
+
+        def extract(i, data):
+            return data
+
+        # Take out validation set
+        if val_split != 0:
+            self.validation_set = enum_ds.filter(val_filter).map(extract)
+
+        # Take out test set
+        if test_split != 0:
+            self.test_set = enum_ds.filter(test_filter).map(extract)
+                
         # Holding batching informations for self.apply_batch() call
         self.batch_size = batch_size
-        self.prefetch_buffer_size = prefetch_buffer_size
+        if prefetch_buffer_size is None:
+            self.prefetch_buffer_size = tf.data.experimental.AUTOTUNE
+        elif prefetch_buffer_size == 0:
+            self.prefetch_buffer_size = None
+        else:
+            self.prefetch_buffer_size = prefetch_buffer_size
 
         # Update object's state
         self.initialized = True
@@ -142,6 +210,11 @@ class DataPipe:
             if self.prefetch_buffer_size is not None:
                 self.validation_set = self.validation_set.prefetch(self.prefetch_buffer_size)
         
+            # Establish batch size and set prefetch buffer for test set
+            if self.test_set is not None:
+                self.test_set = self.test_set.batch(self.batch_size)
+                if self.prefetch_buffer_size is not None:
+                    self.test_set = self.test_set.prefetch(self.prefetch_buffer_size)
 
     @staticmethod
     def dataset_size_from_dir(directory, dtype='float32', ldtype=None):

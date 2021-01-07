@@ -3,5 +3,10 @@
 **.fls
 **.log
 **.toc
+**.out
+**.bbl
+**.bcf
+**.blg
+**.run.xml
 **.synctex.gz
 **/__pycache__

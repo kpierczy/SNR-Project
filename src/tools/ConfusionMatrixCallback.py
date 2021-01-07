@@ -11,22 +11,31 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
 
     """
     Custom keras callback class writing a confussion matrix at the end of each X epochs.
-    The matrix picture is saved to the raw PNG form in the logdir/img folder as well as
-    the tensorboard summary file in the logdir.
+    The matrix picture is saved to the raw (e.g. png, pdf) form in the logdir/raw folder
+    as well as the tensorboard summary file in the logdir/tf foler. Subfolders are 
+    created if needed.
 
-    Params
-    ------
+    Params | Attributes
+    -------------------
     logdir : string
-        at this directory the /cm folder will be created that will hold all created
-        matrices
+        directory that created matrices will be held at
     validation_set : tf.data.Dataset
         validation dataset
     class_names : list of strings
         list of classes' names; index of the name defines the class numerical identifier
     freq : Int, optional (default: 1)
         frequency (in epochs) that the confusion matrix is created at
-    size : tuple or list of two Ints
+    fig_size : tuple or list of two Ints, optional (default: (20,20))
         size of the plot in cm [width, height]
+    basename : string, optional (default: 'Confusion_Matrix')
+        basename of the logs
+
+    Params
+    ------
+    to_save : string, optional (default: 'both')
+        if 'tf', only tensorboard image logs are saved
+        if 'raw', only raw image logs are saved
+        if 'both', both types of logs are saved
 
     Credits
     -------
@@ -38,37 +47,55 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
         validation_set,
         class_names,
         freq=1,
-        fig_size=(8, 8),
-        raw_fig_type='pdf'
+        fig_size=(20, 20),
+        raw_fig_type='pdf',
+        to_save='both',
+        basename='Confusion_Matrix'
     ):
 
-        self.logdir = logdir
+        # Dataset used to comput matrix 
         self.validation_set = validation_set
         self.class_names = class_names
+
+        # Callback's frequency (in epochs)
         self.freq = freq
+
+        # Figure's settings
         self.fig_size = np.array(fig_size) / 2.54
         self.raw_fig_type = raw_fig_type
+
+        # Logs' basename
+        self.basename = basename
 
         # Counter of the epochs passed used to print callback's effect every 'freq' epochs
         self.epochs_since_callback = freq - 1
 
+        # Create folder for tf images
+        self.tf_logdir = None
+        if to_save != 'raw':
+            self.tf_logdir = os.path.join(logdir, 'tf')
+            os.makedirs(self.tf_logdir, exist_ok=True)
+
         # Create folder for raw images
-        self.imgdir = os.path.join(logdir, 'cm/img')
-        os.makedirs(self.imgdir, exist_ok=True)
+        self.raw_logdir = None
+        if to_save != 'tf':
+            self.raw_logdir = os.path.join(logdir, 'raw')
+            os.makedirs(self.raw_logdir, exist_ok=True)
         
 
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, tag, logs):
 
         """
-        Writes the confusion matrix image to the log file at the end of the each 'self.freq' epochs
+        Writes the confusion matrix image to the log file at the end of the each 'self.freq' calls.
+        Returns imidiately if 'self.freq' is equal to 0.
 
         Params
         ------
-        epoch : Int
-            epoch's index
+        tag : Int or string
+            epoch's index or another kind of tag
         logs : Dict
-            metric results for this training epoch
+            metrics results for this training tag
         """
 
         if self.freq <= 0:
@@ -94,15 +121,19 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
         figure = self.__plot_confusion_matrix(con_matrix, class_names=self.class_names, size=self.fig_size)
 
         # Save raw figure image
-        figure.savefig(os.path.join(self.imgdir, 'confusion_matrx_{:d}.'.format(epoch) + self.raw_fig_type), bbox_inches='tight')
+        if self.raw_logdir is not None:
+            delimiter = '_' if str(tag) != '' else ''
+            figname = self.basename + delimiter + str(tag) + '.' + self.raw_fig_type
+            figure.savefig(os.path.join(self.raw_logdir, figname), bbox_inches='tight')
 
         # Log the confusion matrix as an image summary.
-        cm_image_tf = self.__plot_to_image(figure)
-        plt.close(figure)
-        file_writer_cm = tf.summary.create_file_writer(os.path.join(self.logdir, 'cm'))
-        with file_writer_cm.as_default():
-            tf.summary.image("Confusion Matrix", cm_image_tf, step=epoch)
+        if self.tf_logdir is not None:
+            cm_image_tf = self.__plot_to_image(figure)
+            file_writer_cm = tf.summary.create_file_writer(self.tf_logdir)
+            with file_writer_cm.as_default():
+                tf.summary.image(self.basename, cm_image_tf, step=tag if tag is int else 0)
 
+        plt.close(figure)
         return
 
 
@@ -158,7 +189,8 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
     def __plot_to_image(figure):
 
         """
-        Converts the matplotlib plot specified by 'figure' to a PNG image and returns it.
+        Converts the matplotlib plot specified by 'figure' to a PNG-decoded tensorflow
+        image tensor.
 
         Params
         ------
