@@ -82,8 +82,10 @@
     - initialization method of weights (@see tf.keras.initialilzers.get())
 4. "bias_initializator" :
     - initialization method of biases (@see tf.keras.initialilzers.get())
+5. vgg_layers_to_remove :
+    - list of original VGG's layers to remove `not implemented yet`
 5. "vgg_layers_to_train" :
-    - number of last VGG's convolutional layers to be trained (-1 for all)
+    - number of last VGG's convolutional layers to be trained (after layers' removing) (-1 for all)
 6. "optimization/optimizer" : 
     - Name of the optimiser to be used (@see tf.keras.Model.compile)
 7. "optimization/loss" : 

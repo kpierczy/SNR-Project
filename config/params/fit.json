@@ -3,6 +3,7 @@
     "batch_size" : 64,
     "kernel_initializer" : "glorot_normal",
     "bias_initializer" : "glorot_normal",
+    "vgg_layers_to_remove" : [],
     "vgg_layers_to_train" : 2,
     "optimization" : {
         "optimizer" : "adam",
