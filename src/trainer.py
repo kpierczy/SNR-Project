@@ -150,8 +150,8 @@ vgg = vgg19.VGG19(
 )
 
 # Compute number of original layers not to be reinitialized
-to_keep = len(vgg.layers) - fit_param['vgg_layers_to_reinitialize']
-if fit_param['vgg_layers_to_reinitialize'] == -1:
+to_keep = len(vgg.layers) - fit_param['vgg_layers_to_train']
+if fit_param['vgg_layers_to_train'] == -1:
     to_keep = 0
 
 # Turn-off original VGG19 layers' trainability
@@ -212,6 +212,11 @@ model.compile(
 # Load base model's weights
 if fit_param['base_model'] is not None:
     model.load_weights(os.path.join(dirs['models'] ,fit_param['base_model']))
+
+# Print model's summary
+print('\n\n')
+model.summary()
+print('\n\n')
 
 # ----------------------------------------------- Prepare callbacks ----------------------------------------------
 

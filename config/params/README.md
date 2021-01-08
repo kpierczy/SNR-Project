@@ -14,59 +14,12 @@
     - Path to the directory that the result of the test dataset evaluation will be written into (@note If logging.json/log_name is `null` the test validation will be not performed)
 
 
-# Training config (fit.json)
-
-1. "base_model" : 
-    - Path to the file (relative to dirs.json/models) containing saved weights that will be loaded before the training. If `null`, no weights will be loaded
-2. "batch_size" : 
-    - Batch size (for both training and validation datasets)
-3. "kernal_initializator" :
-    - initialization method of weights (@see tf.keras.initialilzers.get())
-4. "bias_initializator" :
-    - initialization method of biases (@see tf.keras.initialilzers.get())
-5. "vgg_layers_to_reinitialize" :
-    - number of last VGG's convolutional layers to be reinitialized (-1 for all)
-6. "optimization/optimizer" : 
-    - Name of the optimiser to be used (@see tf.keras.Model.compile)
-7. "optimization/loss" : 
-    - Name of the loss function to be used (@see tf.keras.Model.compile)
-8. "optimization/learning_rate/indicator" : 
-    - Metric that when plateaued determines learning rate's reduction (@see tf.keras.Model.compile)
-9. "optimization/learning_rate/init" : 
-    - Initial learning rate
-10. "optimization/learning_rate/min" : 
-    - Minimal learning rate
-11. "optimization/learning_rate/min_delta" : 
-    - Minimal reduction of the learning rate on the plateau
-12. "optimization/learning_rate/reduce_factor" : 
-    - Reduction factor of the learning rate on the plateau
-13. "optimization/learning_rate/patience" : 
-    - Number of epochs on the plateau before learning rate's reduction
-14. "optimization/learning_rate/cooldown" : 
-    - Number of epochs after reduction when patience counter is not incrementerd (@see: tf.keras.callbacksReduceLROnPlateau)
-15. "optimization/learning_rate/verbosity" : 
-    - Verbosity of the automatic learning rate's adaptation (0: quite, 1: verbose)
-16. "epochs" : 
-    - Number of training's epochs
-17. "initial_epoch" : 
-    - Number of the epoch that training should begin with (handy for re-running the interrupted training)
-18. "steps_per_epoch" : 
-    - Number of batches of data proceeded during the epoch. If `null` the whole dataset will be proceeeded at the each epoch.
-19. "environment/gpu_memory_cap_mb" : 
-    - Size of the memory allocated on the GPU by tensorflow
-20. "environment/tf_device_verbosity" : 
-    - Verbosity of the tensorflow data placement
-21. "environment/verbosity" : 
-    - Training verbosity level (@see tf.keras.Model.fit())
-22. "environment/workers" : 
-    - Number of workers used to prefetch data during training (@see tf.keras.Model.fit())
-
-
 # Logging config (logging.json)
 
 1. "log_name" : 
     - Basename for files and folders with training-related data generated during learning (`null` to deactivate all logging outputs, i.e. tensorboard metric, confusion matrices and test set evaluation)
-2. "test" : either 'best', 'last' or None. If None, no evaluation of the test set is performed after training. Otherwise the final model (for 'last') or the best model, with respect to validation loss (for 'best') is evaluated.
+2. "test" : 
+    - either 'best', 'last' or None. If None, no evaluation of the test set is performed after training. Otherwise the final model (for 'last') or the best model, with respect to validation loss (for 'best') is evaluated.
 3. "metrics" : 
     - List of names of metrics to be calculated during training (@see tf.keras.Model.compile)
 4. "tensorboard/histogram_freq" : 
@@ -117,3 +70,51 @@
     - If `true`, the random vertical flips will be applied to the dataset
 11. "augmentation/horizontal_flip" : 
     - If `true`, the random horizontal flips will be applied to the dataset
+
+
+# Training config (fit.json)
+
+1. "base_model" : 
+    - Path to the file (relative to dirs.json/models) containing saved weights that will be loaded before the training. If `null`, no weights will be loaded
+2. "batch_size" : 
+    - Batch size (for both training and validation datasets)
+3. "kernal_initializator" :
+    - initialization method of weights (@see tf.keras.initialilzers.get())
+4. "bias_initializator" :
+    - initialization method of biases (@see tf.keras.initialilzers.get())
+5. "vgg_layers_to_train" :
+    - number of last VGG's convolutional layers to be trained (-1 for all)
+6. "optimization/optimizer" : 
+    - Name of the optimiser to be used (@see tf.keras.Model.compile)
+7. "optimization/loss" : 
+    - Name of the loss function to be used (@see tf.keras.Model.compile)
+8. "optimization/learning_rate/indicator" : 
+    - Metric that when plateaued determines learning rate's reduction (@see tf.keras.Model.compile)
+9. "optimization/learning_rate/init" : 
+    - Initial learning rate
+10. "optimization/learning_rate/min" : 
+    - Minimal learning rate
+11. "optimization/learning_rate/min_delta" : 
+    - Minimal reduction of the learning rate on the plateau
+12. "optimization/learning_rate/reduce_factor" : 
+    - Reduction factor of the learning rate on the plateau
+13. "optimization/learning_rate/patience" : 
+    - Number of epochs on the plateau before learning rate's reduction
+14. "optimization/learning_rate/cooldown" : 
+    - Number of epochs after reduction when patience counter is not incrementerd (@see: tf.keras.callbacksReduceLROnPlateau)
+15. "optimization/learning_rate/verbosity" : 
+    - Verbosity of the automatic learning rate's adaptation (0: quite, 1: verbose)
+16. "epochs" : 
+    - Number of training's epochs
+17. "initial_epoch" : 
+    - Number of the epoch that training should begin with (handy for re-running the interrupted training)
+18. "steps_per_epoch" : 
+    - Number of batches of data proceeded during the epoch. If `null` the whole dataset will be proceeeded at the each epoch.
+19. "environment/gpu_memory_cap_mb" : 
+    - Size of the memory allocated on the GPU by tensorflow
+20. "environment/tf_device_verbosity" : 
+    - Verbosity of the tensorflow data placement
+21. "environment/verbosity" : 
+    - Training verbosity level (@see tf.keras.Model.fit())
+22. "environment/workers" : 
+    - Number of workers used to prefetch data during training (@see tf.keras.Model.fit())
