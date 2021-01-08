@@ -57,7 +57,6 @@ import os
 # Directory containing configuration files (relative to PROJECT_HOME)
 CONFIG_DIR = 'config/params'
 
-
 # ------------------------------------------- Environment configuration ------------------------------------------
 
 PROJECT_HOME = os.environ.get('PROJECT_HOME')
@@ -79,7 +78,6 @@ with open(os.path.join(CONFIG_DIR, 'fit.json')) as fit_file:
 with open(os.path.join(CONFIG_DIR, 'logging.json')) as logging_file:
     logging_param = json.load(logging_file)
 
-
 # ------------------------------------------- Tensorflow configuration -------------------------------------------
 
 # Limit GPU's memory usage
@@ -96,7 +94,6 @@ if gpus:
 
 # Verbose data placement info
 tf.debugging.set_log_device_placement(fit_param['environment']['tf_device_verbosity'])
-
 
 # -------------------------------------------------- Prepare data ------------------------------------------------
 
@@ -136,8 +133,15 @@ pipe.training_set = ImageAugmentation(
 # Apply batching to the data sets
 pipe.apply_batch()
 
-
 # -------------------------------------------------- Build model -------------------------------------------------
+
+# Prepare initializers
+kernel_initializer = tf.keras.initializers.get(fit_param['kernel_initializer'])
+bias_initializer = tf.keras.initializers.get(fit_param['bias_initializer'])
+
+# Create preprocessing layer
+model_input = tf.keras.layers.Input(input_shape, dtype='float32')
+preprocessing = vgg19.preprocess_input(model_input)
 
 # Construct base model
 vgg = vgg19.VGG19(
@@ -145,22 +149,51 @@ vgg = vgg19.VGG19(
     include_top=False
 )
 
-# Turn-off original VGG19 layers training
-for layer in vgg.layers[:-1]:
+# Compute number of original layers not to be reinitialized
+to_keep = len(vgg.layers) - fit_param['vgg_layers_to_reinitialize']
+if fit_param['vgg_layers_to_reinitialize'] == -1:
+    to_keep = 0
+
+# Turn-off original VGG19 layers' trainability
+for layer in vgg.layers[:to_keep]:
     layer.trainable = False
 
-# Create preprocessing layer
-model_input = tf.keras.layers.Input(input_shape, dtype='float32')
-preprocessing = vgg19.preprocess_input(model_input)
+# Reinitialize original layers that will be trained
+for layer in vgg.layers[to_keep:]:
+    
+    # Check if layer has wights to reinitialize
+    if hasattr(layer, 'kernel_initializer') and hasattr(layer, 'bias_initializer'):
+
+        # Save old weights and baises
+        weights, biases = layer.get_weights()
+
+        # Reinitialize
+        weights = kernel_initializer(shape=weights.shape)
+        biases = bias_initializer(shape=biases.shape)
+
+        # Set new weights to the layer
+        layer.set_weights([weights, biases])
 
 # Concatenate model and the preprocessing layer
 model = vgg(preprocessing)
 
 # Add Dense layers
 model = Flatten()(model)
-model = Dense(       4096,    activation='relu', bias_initializer='zeros', kernel_initializer=None)(model)
-model = Dense(       4096,    activation='relu', bias_initializer='zeros', kernel_initializer=None)(model)
-model = Dense(num_classes, activation='softmax', bias_initializer='zeros', kernel_initializer=None)(model)
+model = Dense(
+    4096,
+    activation='relu',
+    kernel_initializer=kernel_initializer,
+    bias_initializer=bias_initializer)(model)
+model = Dense(
+    4096,
+    activation='relu',
+    kernel_initializer=kernel_initializer,
+    bias_initializer=bias_initializer)(model)
+model = Dense(
+    num_classes,
+    activation='softmax',
+    kernel_initializer=kernel_initializer,
+    bias_initializer=bias_initializer)(model)
 
 # Initialize optimizer
 optimizer = tf.keras.optimizers.get({
@@ -179,7 +212,6 @@ model.compile(
 # Load base model's weights
 if fit_param['base_model'] is not None:
     model.load_weights(os.path.join(dirs['models'] ,fit_param['base_model']))
-
 
 # ----------------------------------------------- Prepare callbacks ----------------------------------------------
 
@@ -246,7 +278,6 @@ lr_callback = tf.keras.callbacks.ReduceLROnPlateau(
 )
 callbacks.append(lr_callback)
 
-
 # -------------------------------------------------- Train model -------------------------------------------------
 
 # Start training
@@ -263,23 +294,22 @@ history = model.fit(
     shuffle=False
 )
 
-# # Save training history
-# if logging_param['log_name'] is not None:
+# Save training history
+if logging_param['log_name'] is not None:
 
-#     # Create full name of the output file
-#     historydir = os.path.join(PROJECT_HOME, dirs['history'])
-#     historyname = os.path.join(historydir, logging_param['log_name'])
+    # Create full name of the output file
+    historydir = os.path.join(PROJECT_HOME, dirs['history'])
+    historyname = os.path.join(historydir, logging_param['log_name'])
 
-#     # If the name exist it means that the training is continued - add number of the subrun
-#     if os.path.exists(historyname + '.pickle'):
+    # If the name exist it means that the training is continued - add number of the subrun
+    if os.path.exists(historyname + '.pickle'):
 
-#         # Establish nuber of the subrun and modify the name
-#         subruns_already = len(glob(historyname + '*'))
-#         historyname += '_continue_{:d}'.format(subruns_already)
+        # Establish nuber of the subrun and modify the name
+        subruns_already = len(glob(historyname + '*'))
+        historyname += '_continue_{:d}'.format(subruns_already)
 
-#     with open(historyname + '.pickle', 'wb') as history_file:
-#         pickle.dump(history.history, history_file)
-
+    with open(historyname + '.pickle', 'wb') as history_file:
+        pickle.dump(history.history, history_file)
 
 # --------------------------------------------------- Test model -------------------------------------------------
 

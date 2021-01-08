@@ -20,39 +20,45 @@
     - Path to the file (relative to dirs.json/models) containing saved weights that will be loaded before the training. If `null`, no weights will be loaded
 2. "batch_size" : 
     - Batch size (for both training and validation datasets)
-3. "optimization/optimizer" : 
+3. "kernal_initializator" :
+    - initialization method of weights (@see tf.keras.initialilzers.get())
+4. "bias_initializator" :
+    - initialization method of biases (@see tf.keras.initialilzers.get())
+5. "vgg_layers_to_reinitialize" :
+    - number of last VGG's convolutional layers to be reinitialized (-1 for all)
+6. "optimization/optimizer" : 
     - Name of the optimiser to be used (@see tf.keras.Model.compile)
-4. "optimization/loss" : 
+7. "optimization/loss" : 
     - Name of the loss function to be used (@see tf.keras.Model.compile)
-5. "optimization/learning_rate/indicator" : 
+8. "optimization/learning_rate/indicator" : 
     - Metric that when plateaued determines learning rate's reduction (@see tf.keras.Model.compile)
-6. "optimization/learning_rate/init" : 
+9. "optimization/learning_rate/init" : 
     - Initial learning rate
-7. "optimization/learning_rate/min" : 
+10. "optimization/learning_rate/min" : 
     - Minimal learning rate
-8. "optimization/learning_rate/min_delta" : 
+11. "optimization/learning_rate/min_delta" : 
     - Minimal reduction of the learning rate on the plateau
-9. "optimization/learning_rate/reduce_factor" : 
+12. "optimization/learning_rate/reduce_factor" : 
     - Reduction factor of the learning rate on the plateau
-10. "optimization/learning_rate/patience" : 
+13. "optimization/learning_rate/patience" : 
     - Number of epochs on the plateau before learning rate's reduction
-11. "optimization/learning_rate/cooldown" : 
+14. "optimization/learning_rate/cooldown" : 
     - Number of epochs after reduction when patience counter is not incrementerd (@see: tf.keras.callbacksReduceLROnPlateau)
-12. "optimization/learning_rate/verbosity" : 
+15. "optimization/learning_rate/verbosity" : 
     - Verbosity of the automatic learning rate's adaptation (0: quite, 1: verbose)
-13. "epochs" : 
+16. "epochs" : 
     - Number of training's epochs
-14. "initial_epoch" : 
+17. "initial_epoch" : 
     - Number of the epoch that training should begin with (handy for re-running the interrupted training)
-15. "steps_per_epoch" : 
+18. "steps_per_epoch" : 
     - Number of batches of data proceeded during the epoch. If `null` the whole dataset will be proceeeded at the each epoch.
-16. "environment/gpu_memory_cap_mb" : 
+19. "environment/gpu_memory_cap_mb" : 
     - Size of the memory allocated on the GPU by tensorflow
-17. "environment/tf_device_verbosity" : 
+20. "environment/tf_device_verbosity" : 
     - Verbosity of the tensorflow data placement
-18. "environment/verbosity" : 
+21. "environment/verbosity" : 
     - Training verbosity level (@see tf.keras.Model.fit())
-19. "environment/workers" : 
+22. "environment/workers" : 
     - Number of workers used to prefetch data during training (@see tf.keras.Model.fit())
 
 

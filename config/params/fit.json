@@ -1,6 +1,9 @@
 {
     "base_model" : null,
     "batch_size" : 64,
+    "kernel_initializer" : "glorot_normal",
+    "bias_initializer" : "glorot_normal",
+    "vgg_layers_to_reinitialize" : 0,
     "optimization" : {
         "optimizer" : "adam",
         "loss" : "categorical_crossentropy",
@@ -9,7 +12,7 @@
             "init": 1e-3,
             "min" : 1e-7,
             "min_delta" : 1e-7,
-            "reduce_factor": 5e-1,
+            "reduce_factor": 2e-1,
             "patience" : 4,
             "cooldown" : 0,
             "verbosity" : 1
