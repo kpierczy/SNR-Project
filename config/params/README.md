@@ -5,7 +5,7 @@
 2. "validation" : 
     - Path to the directory holding validation data. (@see `src/tools/DataPipe` class' description)
 3. "models" : 
-    - Path to the directory that model's weights will be written into during the training
+    - Path to the directory that model's weights will be written into during the training (@note : If logging.json/log_name is set, weights for the given run will be saved in separet subfolder)
 4. "logs" : 
     - Path to the directory that tensorboard logs will be written into (@note If logging.json/log_name is `null` the log will not be created).
 5. "history" : 
@@ -17,7 +17,7 @@
 # Training config (fit.json)
 
 1. "base_model" : 
-    - Path to the file containing saved weights that will be loaded before the training. If `null`, no weights will be loaded
+    - Path to the file (relative to dirs.json/models) containing saved weights that will be loaded before the training. If `null`, no weights will be loaded
 2. "batch_size" : 
     - Batch size (for both training and validation datasets)
 3. "optimization/optimizer" : 
@@ -40,21 +40,19 @@
     - Number of epochs after reduction when patience counter is not incrementerd (@see: tf.keras.callbacksReduceLROnPlateau)
 12. "optimization/learning_rate/verbosity" : 
     - Verbosity of the automatic learning rate's adaptation (0: quite, 1: verbose)
-13. "metrics" : 
-    - List of names of metrics to be calculated during training (@see tf.keras.Model.compile),
-14. "epochs" : 
+13. "epochs" : 
     - Number of training's epochs
-15. "initial_epoch" : 
+14. "initial_epoch" : 
     - Number of the epoch that training should begin with (handy for re-running the interrupted training)
-16. "steps_per_epoch" : 
+15. "steps_per_epoch" : 
     - Number of batches of data proceeded during the epoch. If `null` the whole dataset will be proceeeded at the each epoch.
-17. "environment/gpu_memory_cap_mb" : 
+16. "environment/gpu_memory_cap_mb" : 
     - Size of the memory allocated on the GPU by tensorflow
-18. "environment/tf_device_verbosity" : 
+17. "environment/tf_device_verbosity" : 
     - Verbosity of the tensorflow data placement
-19. "environment/verbosity" : 
+18. "environment/verbosity" : 
     - Training verbosity level (@see tf.keras.Model.fit())
-20. "environment/workers" : 
+19. "environment/workers" : 
     - Number of workers used to prefetch data during training (@see tf.keras.Model.fit())
 
 
@@ -62,24 +60,29 @@
 
 1. "log_name" : 
     - Basename for files and folders with training-related data generated during learning (`null` to deactivate all logging outputs, i.e. tensorboard metric, confusion matrices and test set evaluation)
-2. "histogram_freq" : 
+2. "test" : either 'best', 'last' or None. If None, no evaluation of the test set is performed after training. Otherwise the final model (for 'last') or the best model, with respect to validation loss (for 'best') is evaluated.
+3. "metrics" : 
+    - List of names of metrics to be calculated during training (@see tf.keras.Model.compile)
+4. "tensorboard/histogram_freq" : 
     - Frequency of the histogram saving (@see tf.keras.callbacks.TensorBoard)
-3. "cm_freq" : 
-    - Frequencu (in epochs) of confusion matrix printin (0: turn off cm generation) (@note If log_name is `null` the confusion maps will be not created)
-4. "cm_raw_ext" : 
-    - Filetype of the raw confusion matrix saved
-5. "cm_to_save" : 
-    - Either "tf" (Tensorboard), "raw" (Raw type) or "both" - type of the matrix image log that will be saved
-5. "cm_size" : 
-    - Size of the confusion matrix plot in cm [width, height]
-6. "update_freq" : 
+5. "tensorboard/update_freq" : 
     - Frequency of the tensorboard update (@see tf.keras.callbacks.TensorBoard)
-7. "write_graph" : 
+6. "tensorboard/write_graph" : 
     - If `true`, the tf computational graph will be save to the tensorboard log
-8. "write_images" : 
+7. "tensorboard/write_images" : 
     - If `true`, the training images will be saved to the tensorboard log
-9. "profile_batch" : 
+8. "tensorboard/profile_batch" : 
     - (@see tf.keras.callbacks.TensorBoard)
+9. "confusion_matrix/freq" : 
+    - Frequencu (in epochs) of confusion matrix printin (0: turn off cm generation) (@note If log_name is `null` the confusion maps will be not created)
+10. "confusion_matrix/raw_ext" : 
+    - Filetype of the raw confusion matrix saved
+11. "confusion_matrix/to_save" : 
+    - Either "tf" (Tensorboard), "raw" (Raw type) or "both" - type of the matrix image log that will be saved
+12. "confusion_matrix/size" : 
+    - Size of the confusion matrix plot in cm [width, height]
+13. "save_best_only :
+    - if `true`, only the best model's weigths will be saved (massively reduces disk usage)
 
 
 # Pipeline config (pipeline.json)

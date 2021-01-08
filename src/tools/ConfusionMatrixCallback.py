@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2021-01-06 22:17:58
- # @ Modified time: 2021-01-07 22:18:19
+ # @ Modified time: 2021-01-08 10:08:17
  # @ Description:
  #     
  #     Implementation of the custom Keras callback periodically generating Confusion Matrix for the
@@ -142,7 +142,7 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
             cm_image_tf = self.__plot_to_image(figure)
             file_writer_cm = tf.summary.create_file_writer(self.tf_logdir)
             with file_writer_cm.as_default():
-                tf.summary.image(self.basename, cm_image_tf, step=tag if tag is int else 0)
+                tf.summary.image(self.basename, cm_image_tf, step=tag if isinstance(tag, int) else 0)
 
         plt.close(figure)
         return

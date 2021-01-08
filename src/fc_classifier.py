@@ -43,11 +43,13 @@ from tensorflow.keras.models import Model
 from tools.ImageAugmentation       import ImageAugmentation
 from tools.DataPipe                import DataPipe
 from tools.ConfusionMatrixCallback import ConfusionMatrixCallback
+from tools.LRTensorBoard           import LRTensorBoard
 # Images manipulation
 from PIL import Image
 # Utilities
 from datetime import datetime
 from glob     import glob
+import numpy as np
 import pickle
 import json
 import os
@@ -144,7 +146,7 @@ vgg = vgg19.VGG19(
 )
 
 # Turn-off original VGG19 layers training
-for layer in vgg.layers:
+for layer in vgg.layers[:-1]:
     layer.trainable = False
 
 # Create preprocessing layer
@@ -171,12 +173,12 @@ model = Model(inputs=[model_input], outputs=[model])
 model.compile(
     loss=fit_param['optimization']['loss'],
     optimizer=optimizer,
-    metrics=fit_param['metrics']
+    metrics=logging_param['metrics']
 )
 
 # Load base model's weights
 if fit_param['base_model'] is not None:
-    model.load_weights(fit_param['base_model'])
+    model.load_weights(os.path.join(dirs['models'] ,fit_param['base_model']))
 
 
 # ----------------------------------------------- Prepare callbacks ----------------------------------------------
@@ -185,15 +187,19 @@ callbacks = []
 
 # Create a logging callback (Tensorboard)
 if logging_param['log_name'] is not None:
+
+    # Create full logdir name
     logdir = os.path.join(PROJECT_HOME, dirs['logs'])
     logdir = os.path.join(logdir, logging_param['log_name'])
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+
+    # Create callback
+    tensorboard_callback = LRTensorBoard(
         log_dir=logdir, 
-        histogram_freq=logging_param['histogram_freq'],
-        write_graph=logging_param['write_graph'],
-        write_images=logging_param['write_images'],
-        update_freq=logging_param['update_freq'],
-        profile_batch=logging_param['profile_batch']
+        histogram_freq=logging_param['tensorboard']['histogram_freq'],
+        write_graph=logging_param['tensorboard']['write_graph'],
+        write_images=logging_param['tensorboard']['write_images'],
+        update_freq=logging_param['tensorboard']['update_freq'],
+        profile_batch=logging_param['tensorboard']['profile_batch']
     )
     callbacks.append(tensorboard_callback)
 
@@ -206,21 +212,25 @@ if logging_param['log_name'] is not None:
         logdir=os.path.join(logdir, 'validation/cm'),
         validation_set=pipe.validation_set,
         class_names=class_names,
-        freq=logging_param['cm_freq'],
-        fig_size=logging_param['cm_size'],
-        raw_fig_type=logging_param['cm_raw_ext'],
-        to_save=logging_param['cm_to_save']
+        freq=logging_param['confusion_matrix']['freq'],
+        fig_size=logging_param['confusion_matrix']['size'],
+        raw_fig_type=logging_param['confusion_matrix']['raw_ext'],
+        to_save=logging_param['confusion_matrix']['to_save']
     )
     callbacks.append(cm_callback)
 
 # Create a checkpoint callback
 modeldir  = os.path.join(PROJECT_HOME, dirs['models'])
+if logging_param['log_name'] is not None:
+    modeldir = os.path.join(modeldir, logging_param['log_name'])
+    os.makedirs(modeldir, exist_ok=True)
 modelname = os.path.join(modeldir, 'weights-epoch_{epoch:02d}-val_loss_{val_loss:.2f}.hdf5')
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=modelname,
     save_weights_only=True,
     verbose=True,
-    save_freq='epoch'
+    save_freq='epoch',
+    save_best_only=logging_param['save_best_only']
 )
 callbacks.append(checkpoint_callback)
 
@@ -253,30 +263,63 @@ history = model.fit(
     shuffle=False
 )
 
-# Save training history
-if logging_param['log_name'] is not None:
-    historydir = os.path.join(PROJECT_HOME, dirs['history'])
-    historyname = os.path.join(historydir, logging_param['log_name'] + '.pickle')
-    with open(historyname, 'wb') as history_file:
-        pickle.dump(history.history, history_file)
+# # Save training history
+# if logging_param['log_name'] is not None:
+
+#     # Create full name of the output file
+#     historydir = os.path.join(PROJECT_HOME, dirs['history'])
+#     historyname = os.path.join(historydir, logging_param['log_name'])
+
+#     # If the name exist it means that the training is continued - add number of the subrun
+#     if os.path.exists(historyname + '.pickle'):
+
+#         # Establish nuber of the subrun and modify the name
+#         subruns_already = len(glob(historyname + '*'))
+#         historyname += '_continue_{:d}'.format(subruns_already)
+
+#     with open(historyname + '.pickle', 'wb') as history_file:
+#         pickle.dump(history.history, history_file)
 
 
 # --------------------------------------------------- Test model -------------------------------------------------
 
-if pipe.test_set is not None and logging_param['log_name'] is not None:
+if pipe.test_set is not None and logging_param['log_name'] is not None and logging_param['test'] is not None:
 
     testdir = os.path.join(PROJECT_HOME, dirs['test'])
+
+    # If the best models hould be evaluated, load appropriate weights
+    if logging_param['test'] == 'best':
+
+        # Find epoch's index of the best score
+        best_epoch = 21#np.nanargmin(np.array(history.history['val_loss'])) + 1
+
+        # Find the weights file
+        weights_file = glob(os.path.join(modeldir, '*epoch_{:d}*'.format(best_epoch)))[0]
+
+        # Load weights
+        model.load_weights(weights_file)
+
+    # Establish testlog files names; mark whether best or last model test is performed
+    testfile_name = logging_param['log_name'] + '_' + logging_param['test']
+
+    # If the test log already exists it means that the training is continued - add number of the subrun
+    testfile_path = os.path.join(testdir, testfile_name + '.pickle')
+    if os.path.exists(testfile_path + '.' + logging_param['confusion_matrix']['raw_ext']):
+
+        # Establish nuber of the subrun and modify the name
+        subruns_already = len(glob(os.path.join(testdir, testfile_name + '*')))
+        testfile_name += '_continue_{:d}'.format(subruns_already)
 
     # Prepare a new Confusion Matrix callback for the test set
     cm_callback = ConfusionMatrixCallback(
         logdir=os.path.join(testdir, 'cm'),
         validation_set=pipe.test_set,
         class_names=class_names,
-        freq=logging_param['cm_freq'],
-        fig_size=logging_param['cm_size'],
-        raw_fig_type=logging_param['cm_raw_ext'],
-        to_save=logging_param['cm_to_save'],
-        basename=logging_param['log_name']
+        freq=logging_param['confusion_matrix']['freq'],
+        fig_size=logging_param['confusion_matrix']['size'],
+        raw_fig_type=logging_param['confusion_matrix']['raw_ext'],
+        to_save=logging_param['confusion_matrix']['to_save'],
+        basename=testfile_name
     )
 
     # Wrap Confusion Matrix callback to be usable with tf.keras.Model.evaluate() method
@@ -296,6 +339,6 @@ if pipe.test_set is not None and logging_param['log_name'] is not None:
 
     # Save test score
     if logging_param['log_name'] is not None:
-        testname = os.path.join(testdir, logging_param['log_name'] + '.pickle')
+        testname = os.path.join(testdir, testfile_name + '.pickle')
         with open(testname, 'wb') as test_file:
             pickle.dump(test_dict, test_file)

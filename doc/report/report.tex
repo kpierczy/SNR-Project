@@ -1,4 +1,4 @@
-\documentclass[a4paper,titlepage,12pt,twosides,floatssmall]{mwart}
+\documentclass[a4paper,12pt,floatssmall]{mwart}
 
 % Page geometry's formatting
 \usepackage[left=3.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
@@ -33,6 +33,7 @@
 
 % Unordered list
 \renewcommand{\labelitemi}{\textbullet}
+
 
 % ============================================================================================================== %
 % --------------------------------------------- Macrodefinitions ----------------------------------------------- %
@@ -84,8 +85,11 @@
 % Table of content
 \tableofcontents
 
-% Content
+% Abstract
+\clearpage
 \input{tex/abstract.tex}
+
+% Chapters
 \input{tex/exercise_analysis.tex}
 \input{tex/vgg_analysis.tex}
 \input{tex/dataset.tex}
