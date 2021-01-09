@@ -1,8 +1,0 @@
-{
-    "training" : "data/fruits-360/Training",
-    "validation" : "data/fruits-360/Test",
-    "models" : "models/last_two_conv/weights",
-    "logs" : "models/last_two_conv/logs",
-    "history" : "models/last_two_conv/history",
-    "test" : "models/last_two_conv/test"
-}

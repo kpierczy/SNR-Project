@@ -3,7 +3,6 @@ numpy
 scipy
 
 # Machine learning frameworks
-keras
 tensorflow-addons
 scikit-learn
 

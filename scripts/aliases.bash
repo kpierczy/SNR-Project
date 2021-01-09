@@ -54,23 +54,16 @@ fi
 # Clear all models logs, history files and test evaluations from the given model's directory
 nncl() {
     if [[ $2 == "" ]]; then
-        sudo rm -rf models/$1/logs/*
-        sudo rm -rf models/$1/history/*
-        sudo rm -rf models/$1/test/*
-        sudo rm -rf models/$1/weights/*
+        sudo rm -rf models/$1/*
     else
-        sudo rm -rf models/$1/logs/$2
-        sudo rm -rf models/$1/history/$2
-        sudo rm -rf models/$1/test/$2
-        sudo rm -rf models/$1/weights/$2
+        sudo rm -rf models/$1/$2/logs
+        sudo rm -rf models/$1/$2/history
+        sudo rm -rf models/$1/$2/test
+        sudo rm -rf models/$1/$2/weights
     fi
 }
 
 # Opens tensorboard with data of the given model's directory
 tboard() {
-    if [[ $2 == "" ]]; then
-        tensorboard --logdir_spec training:models/$1/logs,test:models/$1/test
-    else
-        tensorboard --logdir_spec training/$2:models/$1/logs/$2,test:models/$1/test
-    fi
+    tensorboard --logdir_spec training:models/$1/$2/logs,test:models/$1/$2/test
 }

@@ -1,13 +1,13 @@
 # ================================================================================================================
- # @ Author: Krzysztof Pierczyk
- # @ Create Time: 2021-01-06 22:17:58
- # @ Modified time: 2021-01-08 20:32:16
- # @ Description:
- #     
- #     Implementation of the custom Keras callback periodically generating Confusion Matrix for the
- #     Validation set.
- #
- # ================================================================================================================
+# @ Author: Krzysztof Pierczyk
+# @ Create Time: 2021-01-06 22:17:58
+# @ Modified time: 2021-01-08 20:32:16
+# @ Description:
+#     
+#     Implementation of the custom Keras callback periodically generating Confusion Matrix for the
+#     Validation set.
+#
+# ================================================================================================================
 
 import io
 import os
@@ -80,13 +80,13 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
 
         # Create folder for tf images
         self.tf_logdir = None
-        if to_save != 'raw':
+        if to_save != 'raw' and self.freq > 0:
             self.tf_logdir = os.path.join(logdir, 'tf')
             os.makedirs(self.tf_logdir, exist_ok=True)
 
         # Create folder for raw images
         self.raw_logdir = None
-        if to_save != 'tf':
+        if to_save != 'tf' and self.freq > 0:
             self.raw_logdir = os.path.join(logdir, 'raw')
             os.makedirs(self.raw_logdir, exist_ok=True)
         
