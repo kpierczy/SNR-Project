@@ -26,9 +26,6 @@
 #     As the learning rate scheduler the tf.keras.callbacks.ReduceLROnPlateau object is used. It's parameters
 #     can be tuned from the fit.json file.
 #
-# @ Note: This script should be always run from the main project's directory as it relies on the relative
-#     paths to and from the config files.
-#
 # @ Requirements: All required python packages was listed in config/env/requirements*.py files
 # ================================================================================================================
 
@@ -57,6 +54,7 @@ import os
 # Directory containing configuration files (relative to PROJECT_HOME)
 CONFIG_DIR = 'config/params'
 
+
 # ------------------------------------------- Environment configuration ------------------------------------------
 
 PROJECT_HOME = os.environ.get('PROJECT_HOME')
@@ -78,6 +76,10 @@ with open(os.path.join(CONFIG_DIR, 'fit.json')) as fit_file:
 with open(os.path.join(CONFIG_DIR, 'logging.json')) as logging_file:
     logging_param = json.load(logging_file)
 
+#  Index of the subrun
+subrun = 1
+
+
 # ------------------------------------------- Tensorflow configuration -------------------------------------------
 
 # Limit GPU's memory usage
@@ -95,20 +97,21 @@ if gpus:
 # Verbose data placement info
 tf.debugging.set_log_device_placement(fit_param['environment']['tf_device_verbosity'])
 
+
 # -------------------------------------------------- Prepare data ------------------------------------------------
 
 # Get number of classes
-num_classes = len(glob(os.path.join(dirs['training'], '*')))
+num_classes = len(glob(os.path.join(PROJECT_HOME, os.path.join(dirs['training'], '*'))))
 
 # Load an example image from training dataset to establish input_shape
 input_shape = \
-    list( Image.open(os.path.join(PROJECT_HOME, glob(os.path.join(dirs['training'], '*/*.jp*g'))[0])).size ) + [3]
+    list( Image.open(glob(os.path.join(PROJECT_HOME, os.path.join(dirs['training'], '*/*.jp*g')))[0]).size ) + [3]
 
 # Create data pipe (contains training and validation sets)
 pipe = DataPipe()
 pipe.initialize(
-    dirs['training'],
-    dirs['validation'],
+    os.path.join(PROJECT_HOME, dirs['training']),
+    os.path.join(PROJECT_HOME, dirs['validation']),
     val_split=pipeline_param['valid_split'],
     test_split=pipeline_param['test_split'],
     dtype='float32',
@@ -132,6 +135,7 @@ pipe.training_set = ImageAugmentation(
 
 # Apply batching to the data sets
 pipe.apply_batch()
+
 
 # -------------------------------------------------- Build model -------------------------------------------------
 
@@ -218,6 +222,7 @@ print('\n\n')
 model.summary()
 print('\n\n')
 
+
 # ----------------------------------------------- Prepare callbacks ----------------------------------------------
 
 callbacks = []
@@ -242,7 +247,7 @@ if logging_param['log_name'] is not None:
 
 # Create a confusion matrix callback
 if logging_param['log_name'] is not None:
-    class_folders = glob(os.path.join(dirs['validation'], '*'))
+    class_folders = glob(os.path.join(PROJECT_HOME, os.path.join(dirs['validation'], '*')))
     class_names = [os.path.basename(folder) for folder in class_folders]
     class_names.sort()
     cm_callback = ConfusionMatrixCallback(
@@ -261,9 +266,8 @@ modeldir  = os.path.join(PROJECT_HOME, dirs['models'])
 if logging_param['log_name'] is not None:
     modeldir = os.path.join(modeldir, logging_param['log_name'])
     os.makedirs(modeldir, exist_ok=True)
-modelname = os.path.join(modeldir, 'weights-epoch_{epoch:02d}-val_loss_{val_loss:.2f}.hdf5')
 checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=modelname,
+    filepath=os.path.join(modeldir, 'weights-epoch_{epoch:02d}-val_loss_{val_loss:.2f}.hdf5'),
     save_weights_only=True,
     verbose=True,
     save_freq='epoch',
@@ -282,6 +286,7 @@ lr_callback = tf.keras.callbacks.ReduceLROnPlateau(
     min_lr=fit_param['optimization']['learning_rate']['min']
 )
 callbacks.append(lr_callback)
+
 
 # -------------------------------------------------- Train model -------------------------------------------------
 
@@ -302,48 +307,46 @@ history = model.fit(
 # Save training history
 if logging_param['log_name'] is not None:
 
-    # Create full name of the output file
+    # Create path to the output folder
     historydir = os.path.join(PROJECT_HOME, dirs['history'])
-    historyname = os.path.join(historydir, logging_param['log_name'])
+    historydir = os.path.join(historydir, logging_param['log_name'])
 
-    # If the name exist it means that the training is continued - add number of the subrun
-    if os.path.exists(historyname + '.pickle'):
+    # Compute index of the subrun
+    subrun = len(glob(os.path.join(historydir, '*.pickle'))) + 1
+    
+    # Create path to the output file
+    historyname = os.path.join(historydir, 'subrun_{:d}'.format(subrun))
 
-        # Establish nuber of the subrun and modify the name
-        subruns_already = len(glob(historyname + '*'))
-        historyname += '_continue_{:d}'.format(subruns_already)
-
+    os.makedirs(historydir, exist_ok=True)
     with open(historyname + '.pickle', 'wb') as history_file:
         pickle.dump(history.history, history_file)
 
+
 # --------------------------------------------------- Test model -------------------------------------------------
 
-if pipe.test_set is not None and logging_param['log_name'] is not None and logging_param['test'] is not None:
-
-    testdir = os.path.join(PROJECT_HOME, dirs['test'])
+if pipe.test_set is not None and logging_param['log_name'] is not None and logging_param['test_model'] is not None:
 
     # If the best models hould be evaluated, load appropriate weights
-    if logging_param['test'] == 'best':
+    if logging_param['test_model'] == 'best':
 
         # Find epoch's index of the best score
-        best_epoch = 21#np.nanargmin(np.array(history.history['val_loss'])) + 1
+        best_score = np.nanmin(np.array(history.history['val_loss']))
 
         # Find the weights file
-        weights_file = glob(os.path.join(modeldir, '*epoch_{:d}*'.format(best_epoch)))[0]
+        weights_file = glob(os.path.join(modeldir, '*val_loss_{:.2f}*'.format(best_score)))[0]
 
         # Load weights
         model.load_weights(weights_file)
 
-    # Establish testlog files names; mark whether best or last model test is performed
-    testfile_name = logging_param['log_name'] + '_' + logging_param['test']
+    # Create path to the output folder
+    testdir = os.path.join(PROJECT_HOME, dirs['test'])
+    testdir = os.path.join(testdir, logging_param['log_name'])
 
-    # If the test log already exists it means that the training is continued - add number of the subrun
-    testfile_path = os.path.join(testdir, testfile_name + '.pickle')
-    if os.path.exists(testfile_path + '.' + logging_param['confusion_matrix']['raw_ext']):
+    # Create basename for CM raw files (include type of the model that is tested: lates or best)
+    testbasename = 'subrun_{:d}'.format(subrun) + '_' + logging_param['test_model']
 
-        # Establish nuber of the subrun and modify the name
-        subruns_already = len(glob(os.path.join(testdir, testfile_name + '*')))
-        testfile_name += '_continue_{:d}'.format(subruns_already)
+    # Create path to the output file
+    testname = os.path.join(testdir, testbasename)
 
     # Prepare a new Confusion Matrix callback for the test set
     cm_callback = ConfusionMatrixCallback(
@@ -354,12 +357,12 @@ if pipe.test_set is not None and logging_param['log_name'] is not None and loggi
         fig_size=logging_param['confusion_matrix']['size'],
         raw_fig_type=logging_param['confusion_matrix']['raw_ext'],
         to_save=logging_param['confusion_matrix']['to_save'],
-        basename=testfile_name
+        basename=testbasename
     )
 
     # Wrap Confusion Matrix callback to be usable with tf.keras.Model.evaluate() method
     cm_callback.set_model(model)
-    cm_callback_decorator = \
+    cm_callback_test_decorator = \
         tf.keras.callbacks.LambdaCallback(on_test_end=lambda logs: cm_callback.on_epoch_end('', logs))
 
     # Evaluate test score
@@ -369,11 +372,10 @@ if pipe.test_set is not None and logging_param['log_name'] is not None and loggi
         workers=fit_param['environment']['workers'],
         use_multiprocessing=True if fit_param['environment']['workers'] != 1 else False,
         return_dict=True,
-        callbacks=[cm_callback_decorator]
+        callbacks=[cm_callback_test_decorator]
     )
 
     # Save test score
-    if logging_param['log_name'] is not None:
-        testname = os.path.join(testdir, testfile_name + '.pickle')
-        with open(testname, 'wb') as test_file:
-            pickle.dump(test_dict, test_file)
+    os.makedirs(testdir, exist_ok=True)
+    with open(testname + '.pickle', 'wb') as test_file:
+        pickle.dump(test_dict, test_file)

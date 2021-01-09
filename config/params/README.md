@@ -18,7 +18,7 @@
 
 1. "log_name" : 
     - Basename for files and folders with training-related data generated during learning (`null` to deactivate all logging outputs, i.e. tensorboard metric, confusion matrices and test set evaluation)
-2. "test" : 
+2. "test_model" : 
     - either 'best', 'last' or None. If None, no evaluation of the test set is performed after training. Otherwise the final model (for 'last') or the best model, with respect to validation loss (for 'best') is evaluated.
 3. "metrics" : 
     - List of names of metrics to be calculated during training (@see tf.keras.Model.compile)

@@ -60,9 +60,8 @@ nncl() {
         sudo rm -rf models/$1/weights/*
     else
         sudo rm -rf models/$1/logs/$2
-        sudo rm -rf models/$1/history/$2.pickle
-        sudo rm -rf models/$1/test/$2.pickle
-        sudo rm -rf models/$1/test/cm/raw/$2.png
+        sudo rm -rf models/$1/history/$2
+        sudo rm -rf models/$1/test/$2
         sudo rm -rf models/$1/weights/$2
     fi
 }

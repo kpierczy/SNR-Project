@@ -1,5 +1,5 @@
 {
-    "base_model" : null,
+    "base_model" : "run_1/weights-epoch_01-val_loss_7.64.hdf5",
     "batch_size" : 64,
     "kernel_initializer" : "glorot_normal",
     "bias_initializer" : "glorot_normal",
@@ -19,9 +19,9 @@
             "verbosity" : 1
         }
     },    
-    "epochs" : 40,
-    "initial_epoch" : 0,
-    "steps_per_epoch" : null,
+    "epochs" : 6,
+    "initial_epoch" : 4,
+    "steps_per_epoch" : 50,
     "environment" : {
         "gpu_memory_cap_mb" : 2560,
         "tf_device_verbosity" : false,

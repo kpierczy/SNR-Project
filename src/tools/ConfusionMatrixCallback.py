@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2021-01-06 22:17:58
- # @ Modified time: 2021-01-08 10:08:17
+ # @ Modified time: 2021-01-08 20:32:16
  # @ Description:
  #     
  #     Implementation of the custom Keras callback periodically generating Confusion Matrix for the
@@ -78,9 +78,6 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
         # Logs' basename
         self.basename = basename
 
-        # Counter of the epochs passed used to print callback's effect every 'freq' epochs
-        self.epochs_since_callback = freq - 1
-
         # Create folder for tf images
         self.tf_logdir = None
         if to_save != 'raw':
@@ -112,12 +109,12 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
         if self.freq <= 0:
             return
 
-        # Update frequency counter
-        self.epochs_since_callback += 1
-        if self.epochs_since_callback < self.freq:
-            return
+        # Parse epoch ndex
+        epoch = tag if isinstance(tag, int) else 0
 
-        self.epochs_since_callback = 0
+        # Update frequency counter
+        if epoch % self.freq != 0:
+            return
 
         # Use the model to predict the values from the validation dataset.
         predictions_softmax = self.model.predict(self.validation_set)
@@ -142,7 +139,7 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
             cm_image_tf = self.__plot_to_image(figure)
             file_writer_cm = tf.summary.create_file_writer(self.tf_logdir)
             with file_writer_cm.as_default():
-                tf.summary.image(self.basename, cm_image_tf, step=tag if isinstance(tag, int) else 0)
+                tf.summary.image(self.basename, cm_image_tf, step=epoch)
 
         plt.close(figure)
         return

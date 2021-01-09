@@ -1,6 +1,6 @@
 {
     "log_name" : "run_1",
-    "test" : "best",
+    "test_model" : "best",
     "metrics" : ["accuracy", "mse"],
     "tensorboard" : {
         "histogram_freq" : 1,

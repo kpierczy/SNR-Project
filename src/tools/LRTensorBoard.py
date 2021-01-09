@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2021-01-08 11:47:58
- # @ Modified time: 2021-01-08 11:54:17
+ # @ Modified time: 2021-01-09 13:40:51
  # @ Description:
  #     
  #     Wrapper around tf.keras.callbacks.TensoBoard that introduces learning rate's logging into the
