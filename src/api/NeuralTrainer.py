@@ -11,10 +11,10 @@
 # Tensorflow
 import tensorflow as tf
 # Dedicated datapipe
-from tools.ImageAugmentation       import ImageAugmentation
-from tools.DataPipe                import DataPipe
-from tools.ConfusionMatrixCallback import ConfusionMatrixCallback
-from tools.LRTensorBoard           import LRTensorBoard
+from api.tools.ImageAugmentation       import ImageAugmentation
+from api.tools.DataPipe                import DataPipe
+from api.tools.ConfusionMatrixCallback import ConfusionMatrixCallback
+from api.tools.LRTensorBoard           import LRTensorBoard
 # Images manipulation
 from PIL import Image
 # Utilities
@@ -149,17 +149,21 @@ class NeuralTrainer:
         )
 
         # Augment the data pipe
-        self.pipe.training_set = ImageAugmentation(
-            rotation_range=self.pipeline_params['augmentation']['rotation_range'],
-            brightness_range=self.pipeline_params['augmentation']['brightness_range'],
-            contrast_range=self.pipeline_params['augmentation']['contrast_range'],
-            shear_x_range=self.pipeline_params['augmentation']['shear_x_range'],
-            shear_y_range=self.pipeline_params['augmentation']['shear_y_range'],
-            shear_fill=self.pipeline_params['augmentation']['shear_fill'],
-            vertical_flip=self.pipeline_params['augmentation']['vertical_flip'],
-            horizontal_flip=self.pipeline_params['augmentation']['horizontal_flip'],
-            dtype='float32'
-        )(self.pipe.training_set)
+        if self.pipeline_params['augmentation']['on']:
+            self.pipe.training_set = ImageAugmentation(
+                brightness_range=self.pipeline_params['augmentation']['brightness_range'],
+                contrast_range=self.pipeline_params['augmentation']['contrast_range'],
+                vertical_flip=self.pipeline_params['augmentation']['vertical_flip'],
+                horizontal_flip=self.pipeline_params['augmentation']['horizontal_flip'],
+                zoom_range=self.pipeline_params['augmentation']['zoom_range'],
+                rotation_range=self.pipeline_params['augmentation']['rotation_range'],
+                width_shift_range=self.pipeline_params['augmentation']['width_shift_range'],
+                height_shift_range=self.pipeline_params['augmentation']['height_shift_range'],
+                shear_x_range=self.pipeline_params['augmentation']['shear_x_range'],
+                shear_y_range=self.pipeline_params['augmentation']['shear_y_range'],
+                shear_fill=self.pipeline_params['augmentation']['shear_fill'],
+                dtype='float32'
+            )(self.pipe.training_set)
 
         # Apply batching to the data sets
         self.pipe.apply_batch()

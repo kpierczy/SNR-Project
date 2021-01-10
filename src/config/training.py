@@ -57,7 +57,7 @@ training_params = {
     # Index of the initial epoch (handy for training's continuation)
     'initial_epoch' : 2,
 
-    # Number of batches per epoch (None if the whole dataset shou7ld be fed)
+    # Number of batches per epoch (None if the whole dataset should be proceeded)
     'steps_per_epoch' : 50,
 
     # Training workers

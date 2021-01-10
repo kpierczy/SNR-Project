@@ -84,13 +84,18 @@
 6. Summary and conclusions
 
 
-# Handy tools
+# Training parameters adjusting
 
-1. Keras-vis: [https://raghakot.github.io/keras-vis/]
-2. AMD WattMan equivalent for Linux: [https://gitlab.com/corectrl/corectrl/-/wikis/home]
+1. Weights & biases initialization
 
+2. Validation-Test datasets split ratio
 
-# Resources
+3. Augmentation
 
-1. NN visualisation article: [https://www.analyticsvidhya.com/blog/2019/05/understanding-visualizing-neural-networks/]
-2. Data & NN visualisation article: [https://jonathan-hui.medium.com/visualize-deep-network-models-and-metrics-part-4-9500fe06e3d0]
+4. Batch size
+
+5. Optimizer
+
+6. Loss function
+
+7. Learning rate strategy

@@ -33,7 +33,7 @@ from config.model    import model_params
 from config.pipe     import pipeline_params
 from config.training import training_params
 # training API
-from tools.NeuralTrainer import NeuralTrainer
+from api.NeuralTrainer import NeuralTrainer
 # Images manipulation
 from PIL import Image
 # Utilities
