@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2020-12-11 13:40:58
- # @ Modified time: 2021-01-07 21:48:48
+ # @ Modified time: 2021-01-11 12:43:26
  # @ Description:
  #     
  #     Implementation of the basic data pipeline used for tesnroflow models' training. The aim of the class
@@ -12,7 +12,6 @@
 
 import os
 import sys
-import keras
 import numpy as np
 import tensorflow as tf
 from glob import glob
@@ -253,8 +252,8 @@ class DataPipe:
                 for i in images:
                     
                     # Compute image's size
-                    img = keras.preprocessing.image.img_to_array(    
-                            keras.preprocessing.image.load_img(i),
+                    img = tf.keras.preprocessing.image.img_to_array(    
+                            tf.keras.preprocessing.image.load_img(i),
                             dtype=dtype
                         ) 
                     img_size += img.nbytes

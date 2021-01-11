@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2020-12-11 13:40:58
- # @ Modified time: 2021-01-10 18:19:40
+ # @ Modified time: 2021-01-11 13:39:43
  # @ Description:
  #     
  #     Implementation of the set of the most common image-data augmentation methods gather into the
@@ -32,7 +32,7 @@ class ImageAugmentation:
         height_shift_range=(0, 0),
         shear_x_range=(0, 0),
         shear_y_range=(0, 0),
-        shear_fill=(0, 0, 0),
+        fill=0,
         dtype='uint8'
     ):
 
@@ -63,8 +63,8 @@ class ImageAugmentation:
             [min; max) range for random x-shear adjustement (@see tfa.image.shear_x())
         shear_y_range : tuple or list of two floats
             [min; max) range for random y-shear adjustement (@see tfa.image.shear_y())
-        shear_fill : int or tuple/list of three ints
-            values of the pixels needed to be filled after the shear
+        fill : int 
+            value of the pixels needed to be filled after the shift, rotation & shear
         dtype : string or tf.dtype
             type of the images' representation
         
@@ -85,7 +85,7 @@ class ImageAugmentation:
         self.shear_x_range      = shear_x_range
         self.shear_y_range      = shear_y_range
 
-        self.shear_fill         = shear_fill
+        self.fill               = fill
         self.dtype              = dtype
 
 
@@ -138,7 +138,8 @@ class ImageAugmentation:
         if self.brightness_range[0] != 0 or self.brightness_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
                 ( tf.image.adjust_brightness(x, rand_range(self.brightness_range)), y )
-            ).map(lambda x, y: 
+            )
+            dataset = dataset.map(lambda x, y: 
                 ( tf.clip_by_value(x, clip_value_min=0, clip_value_max=255), y )
             )
 
@@ -146,7 +147,8 @@ class ImageAugmentation:
         if self.contrast_range[0] != 0 or self.contrast_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
                 ( tf.image.adjust_contrast(x, rand_range(self.contrast_range)), y )
-            ).map(lambda x, y: 
+            )
+            dataset = dataset.map(lambda x, y: 
                 ( tf.clip_by_value(x, clip_value_min=0, clip_value_max=255), y )
             )
         
@@ -173,31 +175,31 @@ class ImageAugmentation:
         # Random rotations
         if self.rotation_range[0] != 0 or self.rotation_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
-                ( tfa.image.rotate(x, math.pi / 180 * rand_range(self.rotation_range)), y )
+                ( tfa.image.rotate(x, math.pi / 180 * rand_range(self.rotation_range), fill_mode='constant', fill_value=self.fill), y )
             )
 
         # Random width-shifts
         if self.width_shift_range[0] != 0 or self.width_shift_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
-                ( tfa.image.translate(x, [rand_range(self.width_shift_range), 0.]), y )
+                ( tfa.image.translate_xy(x, [rand_range(self.width_shift_range), 0.], self.fill), y )
             )
 
         # Random height-shifts
         if self.height_shift_range[0] != 0 or self.height_shift_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
-                ( tfa.image.translate(x, [0, rand_range(self.height_shift_range), 0.]), y )
+                ( tfa.image.translate_xy(x, [0, rand_range(self.height_shift_range), 0.], self.fill), y )
             )
 
         # Random shear-x
         if self.shear_x_range[0] != 0 or self.shear_x_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
-                ( tf.cast(tfa.image.shear_x(tf.cast(x, 'uint8'), rand_range(self.shear_x_range), 0), self.dtype), y )
+                ( tf.cast(tfa.image.shear_x(tf.cast(x, 'uint8'), rand_range(self.shear_x_range), self.fill), self.dtype), y )
             )
 
         # Random shear-y
         if self.shear_y_range[0] != 0 or self.shear_y_range[1] != 0:
             dataset = dataset.map(lambda x, y: 
-                ( tf.cast(tfa.image.shear_y(tf.cast(x, 'uint8'), rand_range(self.shear_y_range), 0), self.dtype), y )
+                ( tf.cast(tfa.image.shear_y(tf.cast(x, 'uint8'), rand_range(self.shear_y_range), self.fill), self.dtype), y )
             )
 
         return dataset

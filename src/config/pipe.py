@@ -33,7 +33,7 @@ pipeline_params = {
         'on' : True,
 
         # Random brightness variations' range (in [0,255]) [float] (@see tf.image.adjust_brightness)
-        'brightness_range' : [0, 100],
+        'brightness_range' : [0, 0],
 
         # Random contrast variations' range [float] (@see tf.image.adjust_contrast)
         'contrast_range' : [0, 0],
@@ -62,8 +62,8 @@ pipeline_params = {
         # Random y-wise shear variations' range [float] (@see tfa.image.shear_y)
         'shear_y_range' : [0, 0],
 
-        # Value of the filling pixels for shear operations [float]
-        'shear_fill' : [0, 0, 0]
+        # Value of the filling pixels for translation, rotation & shear operations [int]
+        'fill' : 255
     }
 
 }

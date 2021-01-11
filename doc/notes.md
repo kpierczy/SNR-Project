@@ -41,7 +41,7 @@
         - histograms of neuron's activation in some layers at subsequent training steps
         - histograms of weights' and biases' gradients in some layers at subsequent batches
     - visualise learning metrics over time
-    - visualise classification accuracy 
+    - visualise classification accuracy
         - two classes: well- and wrong-classified (UMAP, t-SNE)
         - original classes: actual vs predicted
         - dimensions reduction (T-SNE, UMAP, grand tour)
@@ -86,16 +86,21 @@
 
 # Training parameters adjusting
 
-1. Weights & biases initialization
+1. Weights & biases initialization: He initialization (Globrot 2010, He 2015)
 
-2. Validation-Test datasets split ratio
+2. Validation-Test datasets split ratio: (1:1) because of lack of reliable soruces
+ 
+3. Augmentation: flips, rotations and shifts
 
-3. Augmentation
+4. Batch size: 64
 
-4. Batch size
+5. Loss function: categorical corssentropy
 
-5. Optimizer
+6. Optimizer: Adam
 
-6. Loss function
+7. Learning rate strategy: Relatively 'small'
 
-7. Learning rate strategy
+
+# Data visualisation
+
+1. Box plots: [https://en.wikipedia.org/wiki/Box_plot]

@@ -161,7 +161,7 @@ class NeuralTrainer:
                 height_shift_range=self.pipeline_params['augmentation']['height_shift_range'],
                 shear_x_range=self.pipeline_params['augmentation']['shear_x_range'],
                 shear_y_range=self.pipeline_params['augmentation']['shear_y_range'],
-                shear_fill=self.pipeline_params['augmentation']['shear_fill'],
+                fill=self.pipeline_params['augmentation']['fill'],
                 dtype='float32'
             )(self.pipe.training_set)
 

@@ -9,15 +9,16 @@
 # ================================================================================================================
 
 # Build the docker image with the preconfigured environment
-if ! sudo docker images | grep $DOCK_IMG > /dev/null; then
+if [[ "$(sudo docker images $DOCK_IMG:$DOCK_IMG_TAG | wc -l)" == "1" ]]; then
     printf "\nLOG: Building a docker image for ROCm environment.\n"
     builder="sudo docker build                                      \
         -f $PROJECT_HOME/scripts/rocm.Dockerfile                    \
-        -t $DOCK_IMG                                                \
+        -t $DOCK_IMG:$DOCK_IMG_TAG                                  \
         --build-arg PROJECT_HOME=${PROJECT_HOME}                    \
         --build-arg TF_VERSION=${TF_VERSION}                        \
         --build-arg DATASET=${DATASET}                              \
-        --build-arg KAGGLE_CONFIG_DIR={$PROJECT_HOME/config/kaggle}"
+        --build-arg KAGGLE_CONFIG_DIR={$PROJECT_HOME/config/kaggle} \
+        --build-arg DOCK_IMG_TAG=${DOCK_IMG_TAG}"
 
     if ! $builder .; then
         printf "\nERR: Building a docker image failes.\n"
@@ -41,4 +42,4 @@ sudo docker run                            \
     --security-opt seccomp=unconfined      \
     -v $HOME/dockerx:/dockerx              \
     -v $PROJECT_HOME:$PROJECT_HOME         \
-    $DOCK_IMG    
+    $DOCK_IMG:$DOCK_IMG_TAG

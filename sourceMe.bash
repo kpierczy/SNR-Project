@@ -41,6 +41,8 @@ DATASET=moltean/fruits
 
 # Name of the docker image (if AMD GPU used)
 DOCK_IMG='snr-rocm'
+DOCK_IMG_TAG='rocm3.10-tf2.4-rc3-dev'
+# DOCK_IMG_TAG='rocm3.8-tf2.3-dev'
 
 # ----------------------------------------------- Exports --------------------------------------------------------
 

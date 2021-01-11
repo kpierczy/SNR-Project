@@ -10,11 +10,14 @@
 # @ Note: According to the users' reports, there is a problem with Polaris GPUs since ROCm-3.7. The workaround
 #     is to use earlier version of the ROCm at the time. Basic container should be switched back to the 
 #     'rocm/tensorflow' when the bug will be fixed.
+#
+# @ Note; AMD dropped support for gfx 8xx card (including Polaris) since ROCm4 ...
 # ================================================================================================================
 
+ARG DOCK_IMG_TAG
+
 # Pull the official ROCm image
-# FROM rocm/tensorflow
-FROM rocm/tensorflow:rocm3.8-tf2.3-dev
+FROM rocm/tensorflow:${DOCK_IMG_TAG}
 
 # Forward environment variables
 ARG PROJECT_HOME

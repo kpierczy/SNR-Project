@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt,floatssmall]{mwart}
+\documentclass[a4paper,12pt,titlepage,floatssmall]{article}
 
 % Page geometry's formatting
 \usepackage[left=3.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
@@ -33,6 +33,21 @@
 
 % Unordered list
 \renewcommand{\labelitemi}{\textbullet}
+
+% Removing clearpage after abstract
+\makeatletter
+\renewenvironment{abstract}{%
+      %\titlepage
+      %\null\vfil
+      \@beginparpenalty\@lowpenalty
+      \small
+      \begin{center}%
+        \bfseries \abstractname
+        \@endparpenalty\@M
+      \end{center}\quotation}%
+     {\quotation\par%\vfil\null\endtitlepage
+     }
+\makeatother
 
 
 % ============================================================================================================== %
@@ -83,10 +98,9 @@
 \maketitle
 
 % Table of content
-\tableofcontents
+% \tableofcontents
 
 % Abstract
-\clearpage
 \input{tex/abstract.tex}
 
 % Chapters
@@ -99,7 +113,7 @@
 \input{tex/summary.tex}
 
 % Bibliography
-\newpage
+\clearpage
 \printbibliography
 
 \end{document}
