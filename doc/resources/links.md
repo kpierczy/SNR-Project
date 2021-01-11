@@ -19,3 +19,5 @@
 2. Datasets sizes: [https://towardsdatascience.com/train-validation-and-test-sets-72cb40cba9e7]
 
 3. Automation of data augmentation: [http://ai.stanford.edu/blog/data-augmentation/]
+
+4. Optimizers: [https://towardsdatascience.com/how-do-we-train-neural-networks-edd985562b73] (awesome series of articles!)

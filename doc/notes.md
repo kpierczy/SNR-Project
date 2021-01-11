@@ -90,7 +90,7 @@
 
 2. Validation-Test datasets split ratio: (1:1) because of lack of reliable soruces
  
-3. Augmentation: flips, rotations and shifts
+3. Augmentation: flips, rotations and shifts, random noise (?)
 
 4. Batch size: 64
 
