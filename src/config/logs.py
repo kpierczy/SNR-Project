@@ -37,7 +37,7 @@ logging_params = {
         'update_freq' : 'epoch',
 
         # Computational graph drawing
-        'write_graph' : False,
+        'write_graph' : True,
 
         # Writting model's weights as an image
         'write_images' : False,

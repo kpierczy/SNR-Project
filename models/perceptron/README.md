@@ -15,6 +15,7 @@
     - cooldown: 0
 8. Test type: last model
 9. Validation:Test ratio: 1:1
+10. No augmentation
 
 # Run 2
 
@@ -33,3 +34,4 @@
     - cooldown: 0
 8. Test type: best model
 9. Validation:Test ratio: 1:1
+10. No augmentation

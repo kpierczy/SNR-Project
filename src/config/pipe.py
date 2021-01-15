@@ -22,13 +22,13 @@ pipeline_params = {
     # Pipeline's augmentation (operations in order)
     'augmentation' : {
         
-        '''
-        Note
-        ----
-        All ranges are expressed in form [min, max). Range expressed as [x,x] pair will result
-        in deterministic generation of x value instead of uniform random generation.
+        # ------------------------------------------------------------------------------------------
+        # Note
+        # ----
+        # All ranges are expressed in form [min, max). Range expressed as [x,x] pair will result
+        # in deterministic generation of x value instead of uniform random generation.
+        # ------------------------------------------------------------------------------------------
 
-        '''
         # Data augmentation is skipped if False
         'on' : True,
 
@@ -39,16 +39,16 @@ pipeline_params = {
         'contrast_range' : [0, 0],
 
         # Random vertical flips
-        'vertical_flip' : False,
+        'vertical_flip' : True,
 
         # Random horizontal flips
-        'horizontal_flip' : False,
+        'horizontal_flip' : True,
 
         # Random zoom range (in [0, 1)) (@see tf.image.crop_and_resize)
         'zoom_range' : [0, 0],
 
         # Random rotations' range (in degrees) [int] (@see tfa.image.rotate)
-        'rotation_range' : [0, 0],
+        'rotation_range' : [-20, 20],
 
         # Random width-wise shifs range (in pixels) [int] (@see tfa.image.translate)
         'width_shift_range' : [0, 0],

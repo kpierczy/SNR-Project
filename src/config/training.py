@@ -29,13 +29,13 @@ training_params = {
             'indicator' : 'val_loss',
 
             # Initial value
-            'init': 1e-3,
+            'init': 1e-4,
 
             # Minimal value
             'min' : 1e-7,
 
-            # Minimal change
-            'min_delta' : 1e-7,
+            # Minimal indicator change to be noticed
+            'min_delta' : 5e-2,
 
             # Reduction factor
             'reduce_factor': 2e-1,
@@ -52,13 +52,13 @@ training_params = {
     },
 
     # Training's length
-    'epochs' : 4,
+    'epochs' : 40,
 
     # Index of the initial epoch (handy for training's continuation)
-    'initial_epoch' : 2,
+    'initial_epoch' : 0,
 
     # Number of batches per epoch (None if the whole dataset should be proceeded)
-    'steps_per_epoch' : 50,
+    'steps_per_epoch' : None,
 
     # Training workers
     'workers' : 4,
