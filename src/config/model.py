@@ -19,9 +19,9 @@ model_params = {
         'bias' : 'glorot_normal'
     },
     
-    # Indices of the original VGG layers that should be removed [Not Implemented Yet]
-    'vgg_layers_to_remove' : [],
+    # Number of _last_ original VGG layers that should be removed
+    'vgg_to_remove' : 5,
 
-    # Number of original VGG last convolution layers that should be retrained
-    'vgg_layers_to_train' : 2,
+    # Number of _last_ original VGG _conv_ layers to be retrained [None to train all layers]
+    'vgg_conv_to_train' : None,
 }

@@ -19,5 +19,3 @@
     - vertical flips
     - horizontal flips
     - random rotations in range [-20,20] degrees
-
-Network was trained with last two (i.e. a max-pool and a convolutional) layers unfrozen.

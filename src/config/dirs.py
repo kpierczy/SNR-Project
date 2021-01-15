@@ -18,5 +18,5 @@ dirs = {
     'validation' : 'data/fruits-360/Test',
 
     # Path to the directory that output files (model's weights, logs, etc.) will be saved to (created as needed)
-    'output' : 'models/last_two_conv/run_1',
+    'output' : 'models/simplified/run_1',
 }

@@ -90,30 +90,38 @@ vgg = tf.keras.applications.vgg19.VGG19(
     include_top=False
 )
 
-# Compute number of original layers not to be reinitialized
-to_keep = len(vgg.layers) - model_params['vgg_layers_to_train']
-if model_params['vgg_layers_to_train'] == -1:
-    to_keep = 0
+# Remove required number of final layers from original vgg
+for i in range(model_params['vgg_to_remove']):
+    vgg.layers.pop()
+vgg = tf.keras.Model(input=model_input, output=vgg.layers[-1].output)
 
-# Turn-off original VGG19 layers' trainability
-for layer in vgg.layers[:to_keep]:
-    layer.trainable = False
-
-# Reinitialize original layers that will be trained
-for layer in vgg.layers[to_keep:]:
+# Reinitialize original convolutional layers that will be trained
+reinitialized = 0
+for layer in reversed(vgg.layers):
     
-    # Check if layer has wights to reinitialize
-    if hasattr(layer, 'kernel_initializer') and hasattr(layer, 'bias_initializer'):
+    # Reinitialize required convolutional layers
+    if model_params['vgg_conv_to_train'] is None or reinitialized < model_params['vgg_conv_to_train']:
 
-        # Save old weights and baises
-        weights, biases = layer.get_weights()
+        # Check if layer has wights to reinitialize
+        if isinstance(layer, tf.keras.layers.Conv2D):
 
-        # Reinitialize
-        weights = kernel_initializer(shape=weights.shape)
-        biases = bias_initializer(shape=biases.shape)
+            # Save old weights and baises
+            weights, biases = layer.get_weights()
 
-        # Set new weights to the layer
-        layer.set_weights([weights, biases])
+            # Reinitialize
+            weights = kernel_initializer(shape=weights.shape)
+            biases = bias_initializer(shape=biases.shape)
+
+            # Set new weights to the layer
+            layer.set_weights([weights, biases])
+
+            # Increment counter of reinitialized layers
+            reinitialized += 1
+
+            continue
+
+    # Froze rest of layers
+    layer.trainable = False
 
 # Concatenate model and the preprocessing layer
 model = vgg(preprocessing)
