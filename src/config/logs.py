@@ -49,7 +49,7 @@ logging_params = {
     # Confusion matrix log
     'confusion_matrix' : {
 
-        # Frequency (in epochs) of matrix' drawing during training
+        # Frequency (in epochs) of matrix' drawing during training [0 to disable]
         'freq' : 10,
 
         # Extension of the raw matrix image

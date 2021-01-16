@@ -85,15 +85,17 @@ model_input = tf.keras.layers.Input(input_shape, dtype='float32')
 preprocessing = tf.keras.applications.vgg19.preprocess_input(model_input)
 
 # Construct base model
-vgg = tf.keras.applications.vgg19.VGG19(
+vgg_imagenet = tf.keras.applications.vgg19.VGG19(
     weights='imagenet',
     include_top=False
 )
 
 # Remove required number of final layers from original vgg
-for i in range(model_params['vgg_to_remove']):
-    vgg.layers.pop()
-vgg = tf.keras.Model(input=model_input, output=vgg.layers[-1].output)
+vgg = tf.keras.Model(
+    inputs=vgg_imagenet.input, 
+    outputs=vgg_imagenet.layers[-(model_params['vgg_to_remove'] + 1)].output, 
+    name='vgg19'
+)
 
 # Reinitialize original convolutional layers that will be trained
 reinitialized = 0
