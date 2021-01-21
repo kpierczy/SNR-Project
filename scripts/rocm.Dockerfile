@@ -11,7 +11,7 @@
 #     is to use earlier version of the ROCm at the time. Basic container should be switched back to the 
 #     'rocm/tensorflow' when the bug will be fixed.
 #
-# @ Note; AMD dropped support for gfx 8xx card (including Polaris) since ROCm4 ...
+# @ Note: AMD dropped support for gfx 8xx cards (including Polaris) since ROCm4 ...
 # ================================================================================================================
 
 ARG DOCK_IMG_TAG
