@@ -28,6 +28,9 @@
 #
 # @ Note: The script assumes that `python3` will be used to run project's code and all python packages are
 #     installed using `python3 -m pip install`
+#
+# @ Note: In case of AMD workflow, the virtual machine is run only when script is sourced with the 'run'
+#     argument.
 # ================================================================================================================
 
 # Project's home directory
@@ -54,6 +57,9 @@ export DOCK_IMG=$DOCK_IMG
 
 # --------------------------------------------- Scripts calls ----------------------------------------------------
 
+# Initialize submodules
+git submodule update --init --recursive
+
 # Handy aliases
 source $PROJECT_HOME/scripts/aliases.bash
 
@@ -67,7 +73,9 @@ if [[ $TF_VERSION == "amd" ]]; then
     $PROJECT_HOME/scripts/impl/docker_install.bash
 
     # Build the image and run the container
-    source $PROJECT_HOME/scripts/impl/rocm.bash
+    if [[ "$1" == "run" ]]; then
+        source $PROJECT_HOME/scripts/impl/rocm.bash
+    fi
 
 # CPU / Nvidia GPU environment
 elif [[ $TF_VERSION == "c" || $TF_VERSION == "nvd" ]]; then

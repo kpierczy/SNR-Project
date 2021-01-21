@@ -1,0 +1,3 @@
+[submodule "visualization/PlotNeuralNet"]
+	path = visualization/PlotNeuralNet
+	url = https://github.com/HarisIqbal88/PlotNeuralNet

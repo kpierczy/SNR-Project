@@ -1,7 +1,7 @@
 # ================================================================================================================
  # @ Author: Krzysztof Pierczyk
  # @ Create Time: 2020-12-11 13:40:58
- # @ Modified time: 2021-01-11 12:43:26
+ # @ Modified time: 2021-01-21 19:52:10
  # @ Description:
  #     
  #     Implementation of the basic data pipeline used for tesnroflow models' training. The aim of the class
@@ -92,7 +92,8 @@ class DataPipe:
         ldtype='uint8',
         batch_size=64, 
         shuffle_buffer_size=None,
-        prefetch_buffer_size=None
+        prefetch_buffer_size=None,
+        parallel_calls=None
     ):
         """
         Initializes new training, validation and test datasets hold by the object. Image data 
@@ -124,6 +125,9 @@ class DataPipe:
             size of the buffer used to prefetch the data (@see tf.data.Dataset.prefetch())
             if None, buffer size is autotuned
             if 0, prefetching is not performed.
+        parallel_calls : int or None
+            number of parallel threads used to load dataset. tf.data.experimental.AUTOTUNE
+            if None given
 
         Note
         ----
@@ -151,12 +155,14 @@ class DataPipe:
         """
 
         # Create and shuffle a training set
-        self.training_set = self.dataset_from_directory([training_dir], dtype=dtype, ldtype=ldtype)[training_dir]
+        self.training_set = self.dataset_from_directory(
+            [training_dir], dtype=dtype, ldtype=ldtype, parallel_calls=parallel_calls)[training_dir]
         if shuffle_buffer_size is not None:
             self.training_set = self.training_set.shuffle(shuffle_buffer_size)
 
         # Enumerate examples from the validation directory
-        ds = self.dataset_from_directory([validation_dir], dtype=dtype, ldtype=ldtype)[validation_dir]
+        ds = self.dataset_from_directory(
+            [validation_dir], dtype=dtype, ldtype=ldtype, parallel_calls=parallel_calls)[validation_dir]
         enum_ds = ds.enumerate()
 
         def test_filter(i, data):
@@ -268,7 +274,14 @@ class DataPipe:
 
 
     @staticmethod
-    def dataset_from_directory(directories, size=None, dtype='uint8', ldtype='uint8', channels=3):
+    def dataset_from_directory(
+        directories, 
+        size=None, 
+        dtype='uint8', 
+        ldtype='uint8', 
+        channels=3,
+        parallel_calls=None
+    ):
 
         """
         Prepares a tf.data.Dataset from images data in the directories. The structure of the directory should
@@ -287,6 +300,9 @@ class DataPipe:
             type of the elements of the categorical vectors that labels will be casted to
         channels : int 
             number of image's channel
+        parallel_calls : int or None
+            number of parallel threads used to load dataset. tf.data.experimental.AUTOTUNE
+            if None given
 
         Note
         ----
@@ -362,9 +378,10 @@ class DataPipe:
             ds = tf.data.Dataset.from_tensor_slices((files, labels))
 
             # Convert filenames of images to the dataset
+            parallel = parallel_calls if parallel_calls is not None else tf.data.experimental.AUTOTUNE
             ds = ds.map(
                 lambda file, label: (file_to_training_example(file), label),
-                num_parallel_calls=tf.data.experimental.AUTOTUNE
+                num_parallel_calls=parallel
             )
 
             datasets[d] = ds

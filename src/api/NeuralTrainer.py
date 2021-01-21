@@ -145,7 +145,8 @@ class NeuralTrainer:
             dtype='float32',
             batch_size=self.training_params['batch_size'],
             shuffle_buffer_size=self.pipeline_params['shuffle_buffer_size'],
-            prefetch_buffer_size=self.pipeline_params['prefetch_buffer_size']
+            prefetch_buffer_size=self.pipeline_params['prefetch_buffer_size'],
+            parallel_calls=self.pipeline_params['parallel_calls']
         )
 
         # Augment the data pipe

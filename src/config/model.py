@@ -23,5 +23,5 @@ model_params = {
     'vgg_to_remove' : 0,
 
     # Number of _last_ original VGG _conv_ layers to be retrained [None to train all layers]
-    'vgg_conv_to_train' : 0,
+    'vgg_conv_to_train' : 2,
 }

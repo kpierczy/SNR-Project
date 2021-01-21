@@ -65,5 +65,12 @@ nncl() {
 
 # Opens tensorboard with data of the given model's directory
 tboard() {
-    tensorboard --logdir_spec training:models/$1/$2/logs,test:models/$1/$2/test
+    SPEC="$2/training:models/$1/$2/logs,$2/test:models/$1/$2/test"
+    for run in "$@"; do
+        if [[ $run == "$0" || $run == "$1" || $run == "$2" ]]; then
+            continue
+        fi
+        SPEC="${SPEC},$run/training:models/$1/$run/logs,$run/test:models/$1/$run/test"
+    done
+    tensorboard --logdir_spec $SPEC
 }

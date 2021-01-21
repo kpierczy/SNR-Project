@@ -1,7 +1,7 @@
-\documentclass[a4paper,12pt,titlepage,floatssmall]{article}
+\documentclass[a4paper,12pt,floatssmall]{scrartcl}
 
 % Page geometry's formatting
-\usepackage[left=3.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{indentfirst}
 \usepackage{placeins}
 \usepackage{float}
@@ -34,21 +34,6 @@
 % Unordered list
 \renewcommand{\labelitemi}{\textbullet}
 
-% Removing clearpage after abstract
-\makeatletter
-\renewenvironment{abstract}{%
-      %\titlepage
-      %\null\vfil
-      \@beginparpenalty\@lowpenalty
-      \small
-      \begin{center}%
-        \bfseries \abstractname
-        \@endparpenalty\@M
-      \end{center}\quotation}%
-     {\quotation\par%\vfil\null\endtitlepage
-     }
-\makeatother
-
 
 % ============================================================================================================== %
 % --------------------------------------------- Macrodefinitions ----------------------------------------------- %
@@ -67,18 +52,18 @@
     \end{center}
     \vspace{2cm}
     \begin{center}
-        {\HUGE {\bf Sieci neuronowe}}\\
+        {\HUGE {\textbf{Sieci neuronowe}}}\\
         \vspace {0.4cm}
         {\Large {(projekt)}}
     \end{center}
     \vspace{4cm}
     \begin{center}
-        {\bf \LARGE Wykorzystanie sieci VGG19 \\do~klasyfikacji owoców}
+        {\textbf{\LARGE Wykorzystanie sieci VGG19 \\do~klasyfikacji owoców}}
         \vspace{3cm}
     \end{center}
     \vfill
     \begin{center}
-        {\bf \normalsize Drelich Ewelina, Dziurlikowski Krzysztof, \\Pawlak Iga, Pierczyk Krzysztof}
+        {\textbf{\normalsize Drelich Ewelina, Dziurlikowski Krzysztof, \\Pawlak Iga, Pierczyk Krzysztof}}
     \end{center}
     \vfill
     \begin{center}
@@ -98,13 +83,13 @@
 \maketitle
 
 % Table of content
-% \tableofcontents
+\tableofcontents
+\clearpage
 
 % Abstract
 \input{tex/abstract.tex}
 
 % Chapters
-\input{tex/exercise_analysis.tex}
 \input{tex/vgg_analysis.tex}
 \input{tex/dataset.tex}
 \input{tex/classifiers.tex}
