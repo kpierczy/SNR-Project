@@ -36,10 +36,10 @@ pipeline_params = {
         'on' : True,
 
         # Random brightness variations' range (in [0,255]) [float] (@see tf.image.adjust_brightness)
-        'brightness_range' : [-25, 25],
+        'brightness_range' : [0, 0],
 
         # Random contrast variations' range [float] (@see tf.image.adjust_contrast)
-        'contrast_range' : [0.9, 1.1],
+        'contrast_range' : [0, 0],
 
         # Random vertical flips
         'vertical_flip' : True,
@@ -54,10 +54,10 @@ pipeline_params = {
         'rotation_range' : [-20, 20],
 
         # Random width-wise shifs range (in pixels) [int] (@see tfa.image.translate)
-        'width_shift_range' : [-25, 25],
+        'width_shift_range' : [0, 0],
 
         # Random height-wise shifs range (in pixels) [int] (@see tfa.image.translate)
-        'height_shift_range' : [-25, 25],
+        'height_shift_range' : [0, 0],
 
         # Random x-wise shear variations' range [float] (@see tfa.image.shear_x)
         'shear_x_range' : [0, 0],
