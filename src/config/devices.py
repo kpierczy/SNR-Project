@@ -11,7 +11,7 @@
 gpu_params = {
 
     # Limit of the GPU's memory usage [MB]
-    "memory_cap_mb" : 2560,
+    "memory_cap_mb" : 3072,
 
     # Verbosity mode of TF data placement in context of devices
     "tf_device_verbosity" : False,
