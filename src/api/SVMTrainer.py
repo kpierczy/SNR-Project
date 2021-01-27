@@ -6,7 +6,8 @@ from os import listdir
 from os.path import isfile, join
 
 from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.svm import SVC
+from sklearn.preprocessing import scale, normalize
+from sklearn.svm import SVC, LinearSVC
 from src.api.NeuralTrainer import NeuralTrainer
 import numpy as np
 from src.api.tools.NetworkOutputMapper import NetworkOutputMapper
@@ -27,7 +28,10 @@ class SVMTrainer(NeuralTrainer):
 
     def initialize(self):
         super().initialize()
-        self.svm = SVC(kernel=self.kernel, verbose=True)
+        if self.kernel == 'linear':
+            self.svm = LinearSVC(verbose=True)
+        else:
+            self.svm = SVC(kernel=self.kernel, verbose=True)
 
         return self
 
@@ -44,6 +48,7 @@ class SVMTrainer(NeuralTrainer):
     def __create_network_output(self, dataset, dir_path: str):
         for image, result in dataset:
             network_out = self.model.predict(image)
+            network_out = normalize(network_out)
             result = result.numpy()
             file_name = tempfile.NamedTemporaryFile(delete=False, dir=dir_path,
                                                     suffix='.npz')
@@ -116,7 +121,10 @@ class SVMTrainer(NeuralTrainer):
             print('Testing model')
             decision = self.svm.predict(network_out)
             accuracy = accuracy_score(prediction_results, decision)
+            print('accuracy: {}'.format(accuracy))
             cm = confusion_matrix(prediction_results, decision)
+            print('confusion matrix: ')
+            print(cm)
             self.__history = {'accuracy': accuracy, 'cm': cm}
 
             # Create path to the output folder

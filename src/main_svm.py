@@ -22,7 +22,7 @@ import os
 
 # Get project's path
 
-PROJECT_HOME = '/home/erucolindo/Dokumenty/Projekty/Python/SNR-Project'
+PROJECT_HOME = '/home/krzysztof/PycharmProjects/SNR-Project'
 
 # Resolve all relative paths to absolute paths
 dirs["training"] = os.path.join(PROJECT_HOME, dirs["training"])
