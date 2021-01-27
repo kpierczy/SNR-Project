@@ -6,7 +6,7 @@
 #
 #       Runs PlotNeuralNet framework on the python file given in the first argument to generate 
 #       neural network's visualization. The filename should be given relative to the 
-#       $PROJECT_HOME/visualization folder. Example usage:
+#       $PROJECT_HOME/visualization folder/nets. Example usage:
 #
 #       viz.bash pipe/pipe.py
 #
@@ -17,10 +17,10 @@
 # ================================================================================================================
 
 # Create temporary project's directory
-tmp=$PROJECT_HOME/visualization/PlotNeuralNet/tmp
+tmp=$PROJECT_HOME/visualization/nets/PlotNeuralNet/tmp
 mkdir -p $tmp
 dir="$(dirname $1)"
-cp $PROJECT_HOME/visualization/$dir/* $tmp/
+cp $PROJECT_HOME/visualization/nets/$dir/* $tmp/
 cd $tmp
 
 # Run the framework
@@ -29,7 +29,7 @@ file="${file%.*}"
 bash ../tikzmake.sh $file
 
 # Move result to the initial directory
-mv "$file.pdf" $PROJECT_HOME/visualization/$dir/
+mv "$file.pdf" $PROJECT_HOME/visualization/nets/$dir/
 
 # Cleanup 
 rm -rf $tmp
