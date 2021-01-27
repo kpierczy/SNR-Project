@@ -51,6 +51,13 @@ training_params = {
         }
     },
 
+    'svm': {
+        'create_network_output': False,
+        'train': True,
+        'test': True,
+        'load_model': False,
+        'model_name': 'model.svm'
+    },
     # Training's length
     'epochs' : 40,
 

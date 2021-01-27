@@ -11,22 +11,24 @@
 # ================================================================================================================
 
 # Create venv folder, if needed 
-if [[ ! -d $PROJECT_HOME/config/venv ]]; then
-    python3 -m virtualenv $PROJECT_HOME/config/env/venv
+if [[ ! -d /home/erucolindo/Dokumenty/Projekty/Python/SNR-Project/config/venv ]]; then
+    python3 -m virtualenv /home/erucolindo/Dokumenty/Projekty/Python/SNR-Project/config/env/venv
 fi
 
 # Source virtual environment
-source $PROJECT_HOME/config/env/venv/bin/activate
+source /home/erucolindo/Dokumenty/Projekty/Python/SNR-Project/config/env/venv/bin/activate
 
 # Update pip
 python3 -m pip install --upgrade pip
 
 # Install required packages in the virtual environment
 echo -e "\nLOG: Installing required packages in the virtual environment\n"
-python3 -m pip install -r $PROJECT_HOME/config/env/requirements.py
+python3 -m pip install -r /home/erucolindo/Dokumenty/Projekty/Python/SNR-Project/config/env/requirements.py
 
 if   [[ $TF_VERSION == "c" ]]; then
-    python3 -m pip install -r $PROJECT_HOME/config/env/requirements_cpu.py
+	echo cpu version
+    python3 -m pip install -r /home/erucolindo/Dokumenty/Projekty/Python/SNR-Project/config/env/requirements_cpu.py
 elif [[ $TF_VERSION == "nvd" ]]; then
-    python3 -m pip install -r $PROJECT_HOME/config/env/requirements_nvd.py
+	echo nvidia version
+    python3 -m pip install -r /home/erucolindo/Dokumenty/Projekty/Python/SNR-Project/config/env/requirements_nvd.py
 fi

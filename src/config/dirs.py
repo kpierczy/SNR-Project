@@ -18,5 +18,9 @@ dirs = {
     'validation' : 'data/fruits-360/Test',
 
     # Path to the directory that output files (model's weights, logs, etc.) will be saved to (created as needed)
-    'output' : 'models/simplified/run_1',
+    'output' : 'models/svm/svm_model',
+
+    'train_network_output': 'data/fruits-360/network_output/train',
+    'test_network_output': 'data/fruits-360/network_output/test',
+
 }
