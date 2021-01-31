@@ -1,6 +1,7 @@
 import os
 import pickle
 import tempfile
+from datetime import datetime
 from glob import glob
 from os import listdir
 from os.path import isfile, join
@@ -20,18 +21,23 @@ class SVMTrainer(NeuralTrainer):
                  logging_params,
                  pipeline_params,
                  training_params,
-                 kernel
+                 # kernel
                  ):
         super().__init__(model, dirs, logging_params, pipeline_params, training_params)
-        self.kernel = kernel
+        # self.kernel = kernel
         self.svm: SVC = None
 
     def initialize(self):
         super().initialize()
-        if self.kernel == 'linear':
-            self.svm = LinearSVC(verbose=True)
+        if self.training_params['svm']['kernel'] == 'linear':
+            self.svm = LinearSVC(max_iter=self.training_params['svm']['max_iter'],
+                                 verbose=self.training_params['svm']['verbosity'],
+                                 loss='hinge')
         else:
-            self.svm = SVC(kernel=self.kernel, verbose=True)
+            self.svm = SVC(kernel=self.training_params['svm']['kernel'],
+                           degree=self.training_params['svm']['poly_degree'],
+                           max_iter=self.training_params['svm']['max_iter'],
+                           verbose=True)
 
         return self
 
@@ -43,7 +49,8 @@ class SVMTrainer(NeuralTrainer):
         return self
 
     def __model_path(self) -> str:
-        return self.dirs['output'] + '/' + self.training_params['svm']['model_name']
+        return os.path.join(self.dirs['output'], self.training_params['svm']['kernel'] + '.svm')
+        # return self.dirs['output'] + '/' + self.training_params['svm']['model_name']
 
     def __create_network_output(self, dataset, dir_path: str):
         for image, result in dataset:
@@ -79,6 +86,7 @@ class SVMTrainer(NeuralTrainer):
             print('Create network output for train set')
             self.__create_network_output(self.pipe.training_set, self.dirs['train_network_output'])
 
+        print("Learning begin time: {}".format(datetime.now()))
         if self.training_params['svm']['train']:
             print('read train features from file')
             network_out, prediction_results = self.__read_network_output(self.dirs['train_network_output'])
@@ -90,15 +98,17 @@ class SVMTrainer(NeuralTrainer):
             print('try to fit SVM model')
             self.svm.fit(network_out, prediction_results)
 
-            #save trained model
-            with open(self.__model_path(), mode='wb') as f:
-                pickle.dump(self.svm, f)
-                print('SVM model saved in file ' + self.__model_path())
+            print("Learning end time: {}".format(datetime.now()))
+            # save trained model
+            if self.training_params['svm']['save_model']:
+                with open(self.__model_path(), mode='wb') as f:
+                    pickle.dump(self.svm, f)
+                    print('SVM model saved in file ' + self.__model_path())
 
     def __test(self):
         print('Try to test SVM model')
 
-        #wczytaj svm z pliku
+        # wczytaj svm z pliku
         if self.training_params['svm']['load_model']:
             with open(self.__model_path(), mode='rb') as f:
                 self.svm = pickle.load(f)
@@ -109,7 +119,6 @@ class SVMTrainer(NeuralTrainer):
             self.__create_network_output(self.pipe.test_set, self.dirs['test_network_output'])
 
         if self.training_params['svm']['test']:
-
             print('Read train features from file')
             network_out, prediction_results = self.__read_network_output(self.dirs['test_network_output'])
             print('Features readed')
@@ -132,12 +141,8 @@ class SVMTrainer(NeuralTrainer):
             os.makedirs(historydir, exist_ok=True)
             subrun = len(glob(os.path.join(historydir, '*.pickle'))) + 1
 
-            #save results
+            # save results
             historyname = os.path.join(historydir, 'subrun_{:d}'.format(subrun))
             with open(historyname + '.pickle', 'wb') as history_file:
                 pickle.dump(self.__history, history_file)
-                print('Test results saved in '+ historyname)
-
-
-
-
+                print('Test results saved in ' + historyname)

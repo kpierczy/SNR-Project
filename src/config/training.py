@@ -9,67 +9,72 @@
 # ================================================================================================================
 
 training_params = {
-    
+
     # Batch size
-    'batch_size' : 64,
+    'batch_size': 64,
 
     # Optimization algorithm settings
-    'optimization' : {
+    'optimization': {
 
         # TF Optimizer's identifier
-        'optimizer' : 'adam',
+        'optimizer': 'adam',
 
         # TF Loss function's identifier
-        'loss' : 'categorical_crossentropy',
+        'loss': 'categorical_crossentropy',
 
         # Learning rate settings (@see tf.keras.callbacks.ReduceLROnPlateau)
-        'learning_rate' : {
+        'learning_rate': {
 
             # Reduction's indicator 
-            'indicator' : 'val_loss',
+            'indicator': 'val_loss',
 
             # Initial value
             'init': 1e-4,
 
             # Minimal value
-            'min' : 1e-7,
+            'min': 1e-7,
 
             # Minimal indicator change to be noticed
-            'min_delta' : 5e-2,
+            'min_delta': 5e-2,
 
             # Reduction factor
             'reduce_factor': 2e-1,
 
             # Patience (in epochs)
-            'patience' : 4,
+            'patience': 4,
 
             # Cooldown
-            'cooldown' : 0,
+            'cooldown': 0,
 
             # Changes' verbosity
-            'verbosity' : 1
+            'verbosity': 1
         }
     },
 
     'svm': {
         'create_network_output': False,
         'train': True,
-        'test': False,
+        'test': True,
         'load_model': False,
-        'model_name': 'square.svm'
+        'save_model': True,
+        'kernel': 'linear', # {‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’}
+        'poly_degree': 2,
+        'max_iter': 1000,
+        'verbosity': True
+        # 'model_name': 'square.svm'
     },
     # Training's length
-    'epochs' : 40,
+    'epochs': 40,
 
     # Index of the initial epoch (handy for training's continuation)
-    'initial_epoch' : 0,
+    'initial_epoch': 0,
 
     # Number of batches per epoch (None if the whole dataset should be proceeded)
-    'steps_per_epoch' : None,
+    'steps_per_epoch': None,
 
     # Training workers
-    'workers' : 4,
+    'workers': 4,
 
     # Training's verbosity
-    'verbosity' : 1,
+    'verbosity': 1,
 }

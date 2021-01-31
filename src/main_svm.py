@@ -138,8 +138,7 @@ trainer = SVMTrainer(
     dirs=dirs,
     logging_params=logging_params,
     pipeline_params=pipeline_params,
-    training_params=training_params,
-    kernel='linear'
+    training_params=training_params
 )
 
 # Run training
